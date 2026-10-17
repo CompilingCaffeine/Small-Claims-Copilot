@@ -41,7 +41,7 @@ export function ReviewStep({ state, update }: { state: CaseState; update: Update
   const detailsSummary = `${backed} of ${packet.statements.length} statements backed · evidence list${photos ? ` · ${photos} photo${photos === 1 ? "" : "s"}` : ""} · ${diffs} difference${diffs === 1 ? "" : "s"} between documents · timeline`;
 
   return (
-    <div>
+    <div className="packet">
       <div className="row no-print" style={{ justifyContent: "space-between", marginBottom: 12 }}>
         {state.generatedAt && (
           <p className="small muted" style={{ margin: 0, flex: 1, minWidth: 260 }}>

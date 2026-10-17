@@ -236,3 +236,32 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 .details-toggle .small { font-weight: 400; }
 .details-body { margin-top: 16px; }
 .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* Printed packet: one typeface and four sizes, each section on its own page.
+   Last in the file so it wins over the screen rules above. */
+@media print {
+  @page { size: letter; margin: 0.6in; }
+  body, body * { font-family: var(--font-ui) !important; letter-spacing: normal !important; }
+  body { font-size: 10.5pt; line-height: 1.45; }
+
+  /* Title and section headings */
+  .print-header h1 { font-size: 20pt; margin: 0 0 6pt; }
+  .panel h2 { font-size: 14pt; margin: 0 0 6pt; }
+
+  /* Body: everything a reader reads */
+  .panel, .card, .notice, .side, .side .value, .doc-name, .excerpt, .event, .step-note, .photo-body,
+  .panel h3, .steps > li strong { font-size: 10.5pt; }
+  .side .value, .panel h3 { font-weight: 600; }
+  .panel h3 { margin: 14pt 0 6pt; }
+
+  /* Secondary: labels, sources, and notes */
+  .small, .lede, .why, .tag, .excerpt .src, .side .label, .photo-label, .event-date, .hash,
+  .print-header p, .steps > li::before, .muted { font-size: 9pt; }
+  .lede { margin: 0 0 10pt; }
+
+  /* Each section starts a new page; the first follows the title. */
+  .packet .panel { break-before: page; }
+  .packet > section.panel:first-of-type { break-before: auto; }
+  .panel h2 { break-after: avoid; }
+}
+

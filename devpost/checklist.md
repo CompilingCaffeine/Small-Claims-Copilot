@@ -92,6 +92,7 @@ Build mode: fast (chosen by learner; pauses at the slice 3 checkpoint and final 
 - [ ] Photo evidence (slice 7) tried by the learner after the final review
 - [x] A next step asking for a photo the case already has is hidden (demo: the deck photo hides "Take or gather dated photos of the finished deck stain")
 - [x] Shorter wording: summary note "Written by AI. Review and edit before relying on it.", Key flags lede without "Fix your account…", printed header shows only the generated date
+- [x] Printed PDF uses one typeface and four sizes, with each section starting on a new page
 - [x] Removed the photo hash disclaimer, the "Places where two of your documents…" lede, and both timeline notes; "Date unknown" → "Event: Date Unknown"
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship (first confirmed "Looks great!" before slice 7; reconfirm after trying photos)
 
@@ -145,3 +146,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Photo follow-up (learner): an AI next step asking for a photo the case already has is hidden. Matching needs judgment (the demo step says "deck stain", the description says "wooden deck boards"), so the describe call receives the AI's current next steps and returns which photo requests it answers (`answersStepIds`, filtered to real IDs); `assemblePacket` hides those while the photo is in the case. Photos added before generating are passed to the analysis instead. The demo photo was re-recorded against the saved demo steps (it answers exactly that one). The demo text recording wasn't re-recorded: with no photos, the analysis prompt and message are unchanged in effect.
 - Learner trimmed explanatory text: the photo hash disclaimer (the README keeps it), the differences lede, and the timeline notes; the undated list heading is "Event: Date Unknown".
 - Learner trimmed the printed header to the generated date, so `amountClaimedCents` (used only there) was removed from the packet; an unclear amount still surfaces as "unknown" through the `step-amount` next step, which quotes the user's words (packet test).
+- Print typography (learner): the demo PDF measured 10 text sizes (8.6–20pt) with monospace mixed in; a final `@media print` block sets Geist throughout and four sizes (20pt title, 14pt headings, 10.5pt body, 9pt labels and notes), and each section starts a new page (`.packet .panel { break-before: page }`, except the first). Re-measured with unpdf: exactly 4 sizes, 13 Letter pages for the demo with the photo.

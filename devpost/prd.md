@@ -110,7 +110,7 @@ Source: `scope.md > The Core Loop`.
 - [ ] Edits remain after regenerating where the underlying item still exists *(assumption, see Open Questions)*.
 
 ### Print
-- [ ] A Print button produces a clean printable packet (no buttons or tabs), including the not-legal-advice notice, source excerpts, and statuses in text form.
+- [ ] A Print button produces a clean printable packet (no buttons or tabs), including the not-legal-advice notice, source excerpts, and statuses in text form, in one typeface with each section starting on a new page.
 
 ### Clear case
 - [ ] **Clear case** removes the current case's description, answers, documents, and packet after a confirmation.
