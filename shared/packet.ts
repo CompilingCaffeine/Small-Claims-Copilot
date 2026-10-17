@@ -3,10 +3,11 @@
 // excerpt is confirmed to be in a document that's still part of the case.
 import { detectConflicts } from "./conflicts.ts";
 import { findExcerpt } from "./excerpt.ts";
-import { detectGaps } from "./gaps.ts";
+import { detectFlags } from "./flags.ts";
 import { contentId } from "./ids.ts";
+import { leadingSteps, trailingSteps } from "./nextSteps.ts";
 import { linkFor } from "./officialLinks.ts";
-import type { Analysis, CaseState, Fact, FollowUp, Packet, StatementResult } from "./schemas.ts";
+import type { Analysis, CaseState, Fact, NextStep, Packet, StatementResult } from "./schemas.ts";
 
 /** Facts that survive re-checking against the documents currently in the case. */
 export function verifiedFacts(state: Pick<CaseState, "documents" | "facts">): Fact[] {
@@ -23,12 +24,12 @@ export function verifiedFacts(state: Pick<CaseState, "documents" | "facts">): Fa
 
 export function assemblePacket(state: Pick<CaseState, "input" | "documents" | "facts">, analysis: Analysis): Packet {
   const facts = verifiedFacts(state);
-  const factIds = new Set(facts.map((f) => f.id));
+  const factsById = new Map(facts.map((f) => [f.id, f]));
 
   const statements: StatementResult[] = analysis.statements.map((statement) => {
     const links = analysis.links.filter((l) => l.statementId === statement.id);
-    const supporting = unique(links.flatMap((l) => l.supports)).filter((id) => factIds.has(id));
-    const contradicting = unique(links.flatMap((l) => l.contradicts)).filter((id) => factIds.has(id));
+    const supporting = unique(links.flatMap((l) => l.supports)).filter((id) => factsById.has(id));
+    const contradicting = unique(links.flatMap((l) => l.contradicts)).filter((id) => factsById.has(id));
     return {
       statement,
       status: supporting.length > 0 ? "backed" : "your_word_only",
@@ -37,27 +38,38 @@ export function assemblePacket(state: Pick<CaseState, "input" | "documents" | "f
     };
   });
 
-  const droppedFactCount = Object.values(state.facts).reduce((n, f) => n + f.droppedCount, 0);
-  const conflicts = detectConflicts({ facts, documents: state.documents, statements: analysis.statements }, analysis.conflicts);
-  const { gaps, followUps: ruleFollowUps } = detectGaps(state.input, state.documents, state.facts, statements);
-  const aiFollowUps: FollowUp[] = analysis.followUps.map((f) => ({
-    id: contentId("fu", f.question),
-    question: f.question,
-    whyItMatters: f.whyItMatters,
+  const notes = new Map(analysis.links.filter((l) => l.note.trim()).map((l) => [l.statementId, l.note.trim()]));
+  const flags = detectFlags(statements, factsById, notes);
+  const context = { input: state.input, documents: state.documents, facts: state.facts, statements, flags, factsById };
+  const aiSteps: NextStep[] = analysis.nextSteps.map((s) => ({
+    id: contentId("step", s.action),
+    action: s.action,
+    whyItMatters: s.whyItMatters,
     origin: "ai",
-    ...(linkFor(f.topic) ? { link: linkFor(f.topic) } : {}),
+    ...(linkFor(s.topic) ? { link: linkFor(s.topic) } : {}),
   }));
 
   return {
-    needsAttention: { conflicts, gaps },
-    followUps: [...ruleFollowUps, ...aiFollowUps],
+    flags,
+    nextSteps: linkOnce([...leadingSteps(context), ...aiSteps, ...trailingSteps(context)]),
+    documentDifferences: detectConflicts({ facts, documents: state.documents }, analysis.conflicts),
     statements,
     timeline: [],
     undated: [],
     evidence: [],
     summary: { text: analysis.summary, origin: "ai" },
-    droppedFactCount,
+    droppedFactCount: Object.values(state.facts).reduce((n, f) => n + f.droppedCount, 0),
   };
+}
+
+/** Each official page is linked from the first step that needs it, not repeated on every step. */
+function linkOnce(steps: NextStep[]): NextStep[] {
+  const seen = new Set<string>();
+  return steps.map(({ link, ...step }) => {
+    if (!link || seen.has(link.url)) return step;
+    seen.add(link.url);
+    return { ...step, link };
+  });
 }
 
 function unique<T>(items: T[]): T[] {

@@ -1,8 +1,10 @@
 import { useMemo } from "react";
 import { assemblePacket, verifiedFacts } from "../../shared/packet.ts";
 import type { CaseState } from "../../shared/schemas.ts";
-import { FollowUps } from "../packet/FollowUps.tsx";
-import { NeedsAttention } from "../packet/NeedsAttention.tsx";
+import { Details } from "../packet/Details.tsx";
+import { Differences } from "../packet/Differences.tsx";
+import { KeyFlags } from "../packet/KeyFlags.tsx";
+import { NextSteps } from "../packet/NextSteps.tsx";
 import { Statements } from "../packet/Statements.tsx";
 import { Summary } from "../packet/Summary.tsx";
 
@@ -20,6 +22,10 @@ export function ReviewStep({ state }: { state: CaseState }) {
     );
   }
 
+  const backed = packet.statements.filter((s) => s.status === "backed").length;
+  const diffs = packet.documentDifferences.length;
+  const detailsSummary = `${backed} of ${packet.statements.length} statements backed · ${diffs} difference${diffs === 1 ? "" : "s"} between documents · summary`;
+
   return (
     <div>
       {state.generatedAt && (
@@ -29,10 +35,13 @@ export function ReviewStep({ state }: { state: CaseState }) {
             ` ${packet.droppedFactCount} extracted fact${packet.droppedFactCount === 1 ? " was" : "s were"} discarded because the quoted words weren't in the document.`}
         </p>
       )}
-      <NeedsAttention packet={packet} factsById={factsById} documents={state.documents} />
-      <FollowUps packet={packet} />
-      <Statements packet={packet} factsById={factsById} state={state} />
-      <Summary packet={packet} />
+      <KeyFlags packet={packet} factsById={factsById} documents={state.documents} />
+      <NextSteps packet={packet} />
+      <Details summary={detailsSummary}>
+        <Statements packet={packet} factsById={factsById} state={state} />
+        <Differences packet={packet} factsById={factsById} documents={state.documents} />
+        <Summary packet={packet} />
+      </Details>
     </div>
   );
 }

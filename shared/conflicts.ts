@@ -1,15 +1,16 @@
-// Conflicts are shown side by side and never resolved. Code decides whether a
-// conflict is "checked" (the normalized values really differ) or only an
-// "AI interpretation".
+// Differences between documents, shown side by side in the packet details and never
+// resolved. Code decides whether one is "checked" (the normalized values really
+// differ) or only an "AI interpretation". Disagreements with the user are key flags
+// (flags.ts), not conflicts.
 import { contentId } from "./ids.ts";
 import { formatFactValue } from "./normalize.ts";
-import type { Analysis, Conflict, Fact, SourceDocument, UserStatement } from "./schemas.ts";
+import type { Analysis, Conflict, Fact, SourceDocument } from "./schemas.ts";
 
 // Subjects that should have exactly one value per case. Others (payments, line
 // items) legitimately repeat with different values, so code doesn't compare them.
 const SINGLE_VALUED = new Set(["total_price", "agreement_date", "deposit_paid"]);
 
-type Context = { facts: Fact[]; documents: SourceDocument[]; statements: UserStatement[] };
+type Context = { facts: Fact[]; documents: SourceDocument[] };
 
 export function detectConflicts(ctx: Context, aiConflicts: Analysis["conflicts"]): Conflict[] {
   const byId = new Map(ctx.facts.map((f) => [f.id, f]));
@@ -18,19 +19,8 @@ export function detectConflicts(ctx: Context, aiConflicts: Analysis["conflicts"]
   // AI-proposed conflicts, kept with whatever references survived validation.
   for (const c of aiConflicts) {
     const facts = c.factIds.map((id) => byId.get(id)).filter((f): f is Fact => !!f);
-    const statements = c.statementIds
-      .map((id) => ctx.statements.find((s) => s.id === id))
-      .filter((s): s is UserStatement => !!s);
-    if (facts.length === 0 || facts.length + statements.length < 2) continue;
-    out.push(
-      build(ctx, {
-        basis: valuesDiffer(facts) ? "checked" : "ai_interpretation",
-        subject: c.subject,
-        note: c.note,
-        facts,
-        statements,
-      }),
-    );
+    if (facts.length < 2) continue;
+    out.push(build(ctx, { basis: valuesDiffer(facts) ? "checked" : "ai_interpretation", subject: c.subject, note: c.note, facts }));
   }
 
   // Code-detected conflicts: the same single-valued subject with different values.
@@ -48,7 +38,7 @@ export function detectConflicts(ctx: Context, aiConflicts: Analysis["conflicts"]
       covering.basis = "checked";
       continue;
     }
-    out.push(build(ctx, { basis: "checked", subject: subject.replace(/_/g, " "), facts, statements: [] }));
+    out.push(build(ctx, { basis: "checked", subject: subject.replace(/_/g, " "), facts }));
   }
   return out;
 }
@@ -64,18 +54,15 @@ export function valuesDiffer(facts: Fact[]): boolean {
 
 function build(
   ctx: Context,
-  c: { basis: Conflict["basis"]; subject: string; note?: string; facts: Fact[]; statements: UserStatement[] },
+  c: { basis: Conflict["basis"]; subject: string; note?: string; facts: Fact[] },
 ): Conflict {
   const filename = (f: Fact) => ctx.documents.find((d) => d.id === f.documentId)?.filename ?? "document";
-  const refs = [...c.facts.map((f) => f.id), ...c.statements.map((s) => s.id)].sort();
+  const refs = c.facts.map((f) => f.id).sort();
   return {
     id: contentId("conflict", refs.join("|")),
     basis: c.basis,
     subject: c.subject,
     ...(c.note ? { note: c.note } : {}),
-    sides: [
-      ...c.facts.map((f) => ({ label: filename(f), value: formatFactValue(f.value), factId: f.id })),
-      ...c.statements.map((s) => ({ label: "You said", value: s.text, statementId: s.id })),
-    ],
+    sides: c.facts.map((f) => ({ label: filename(f), value: formatFactValue(f.value), factId: f.id })),
   };
 }

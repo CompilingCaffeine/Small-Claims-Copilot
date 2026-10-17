@@ -1,6 +1,8 @@
 // The Demo case: a fictional contractor payment dispute. Every name, business,
-// and document here is made up. The document text matches the files in
-// demo-files/ exactly; facts are still extracted live when you click Generate.
+// address, and document here is made up. The document text matches the files in
+// demo-files/ exactly. Generating the unedited demo replays a saved AI run
+// (demoResults.json, see demoReplay.ts) instead of calling the API.
+import { contentId } from "../../shared/ids.ts";
 import { emptyCase, type CaseState, type SourceDocument } from "../../shared/schemas.ts";
 
 const FICTIONAL = "FICTIONAL DOCUMENT FOR DEMONSTRATION ONLY";
@@ -41,6 +43,7 @@ Signed: Jordan Avila
     pages: [
       `${FICTIONAL}
 RIDGELINE HOME REPAIR
+2150 Alder Creek Rd, Sacramento, CA 95826
 Invoice #1047
 Invoice date: March 12, 2026
 Bill to: Jordan Avila
@@ -101,7 +104,7 @@ export function demoCase(): CaseState {
     ...emptyCase(),
     input: {
       description:
-        "I hired Ridgeline Home Repair to replace and stain my back deck for $2,400. I paid a $600 deposit when I signed. The work finished about a week late, and then Dale sent an invoice for $2,800, saying the extra $400 was for a third coat of stain I never agreed to. I paid the $2,200 balance under protest so he would stop threatening a lien, but I want the $400 back. Ridgeline has since moved and I only have Dale's phone number.",
+        "I hired Ridgeline Home Repair to replace and stain my back deck for $2,400. I paid a $500 deposit when I signed. The work finished about a week late, and then Dale sent an invoice for $2,800, saying the extra $400 was for a third coat of stain I never agreed to. I paid the $2,200 balance under protest so he would stop threatening a lien, but I want the $400 back. Ridgeline has since moved and I only have Dale's phone number.",
       amountOwed: "$400",
       overdue: "about 6 weeks",
       saidWontPay: "yes",
@@ -109,4 +112,10 @@ export function demoCase(): CaseState {
     },
     documents: structuredClone(DEMO_DOCUMENTS),
   };
+}
+
+/** Identifies the exact demo content a recording was made from. Any edit changes it. */
+export function demoFingerprint(state: Pick<CaseState, "input" | "documents">): string {
+  const documents = state.documents.map(({ id, filename, pages, status }) => ({ id, filename, pages, status }));
+  return contentId("demo", JSON.stringify({ input: state.input, documents }));
 }

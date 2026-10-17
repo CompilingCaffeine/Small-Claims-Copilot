@@ -15,18 +15,18 @@ Source: `scope.md > The Core Loop`, `scope.md > What "Working" Looks Like`.
 2. **Step 1 · Describe.** They write a short description of the dispute and answer clarifying questions: how much they're owed, how long it's been overdue, whether the other party has said they won't pay, and whether they know where the other party lives or does business. Anything can be left as "not sure."
 3. **Step 2 · Add evidence.** They upload or paste a few documents (contract, invoice, text thread). Each shows its filename and extraction status, and can be removed. The step prompts for documents that would back what they said in Step 1 ("You said he owes $2,800. Do you have an invoice that shows it?").
 4. They click **Generate packet**.
-5. **Step 3 · Review packet.** The packet opens with **Needs attention** first: conflicts (e.g. contract says $2,400, invoice says $2,800) and must-resolve gaps (e.g. "You don't know where the other party lives or does business"). Below that: follow-up questions, statements marked ✓ backed by / ⚠ your word only, the timeline, and the evidence list.
-6. They answer a follow-up question, or go back and add a missing document, then regenerate. "Your word only" items become "backed by" once a document supports them.
+5. **Step 3 · Review packet.** The packet opens with **Key flags**: places where what they said doesn't match their documents (e.g. "You said you don't know where they do business, but your invoice lists an address"). Then **Next steps**: a short ordered list of actions, each with why it matters. Everything else (statements marked ✓ backed by / ⚠ your word only, the timeline, the evidence list, differences between documents, the summary) is in collapsed **Packet details**.
+6. They act on a next step, or go back and add a missing document, then regenerate. "Your word only" items become "backed by" once a document supports them.
 7. They edit wording where needed and print the packet.
 
-**Success:** on the demo case, the packet shows at least one conflict flag at the top, a mix of backed and your-word-only statements with excerpts one click away, and follow-up questions that say why they matter.
+**Success:** on the demo case, the packet shows at least one key flag at the top (what you said vs. a document's exact words), next steps that say why they matter, and in the details a mix of backed and your-word-only statements with excerpts one click away.
 
 ## Screens and Layout
 - **Header (always visible):** app name, the not-legal-advice notice, tabs **My case** | **Demo case**, and a **Clear case** button.
 - **Step indicator:** Describe → Add evidence → Review packet. Separate steps; the user can move back to earlier steps.
 - **Step 1 · Describe:** a description box plus the clarifying questions as short fields.
 - **Step 2 · Add evidence:** upload/paste area, a list of documents with status and remove buttons, a "what would back your claims" prompt list, a note that documents are sent to an AI service for extraction, and the **Generate packet** button.
-- **Step 3 · Review packet:** a single scrolling page, in this order: Needs attention → Follow-up questions → Statements (backed / your word only) → Timeline → Evidence list → Case summary. Print button.
+- **Step 3 · Review packet:** Key flags → Next steps → collapsed Packet details (Statements, Timeline, Evidence list, Differences between documents, Case summary). Print button; print expands the details.
 
 ## Look and Feel
 Source: `scope.md > Inspiration & Identity`.
@@ -48,7 +48,7 @@ Source: `scope.md > Inspiration & Identity`.
 ### Case tabs and demo case
 Source: `scope.md > The POC Boundary`.
 - **My case** is the user's own case. **Demo case** is a fictional contractor payment dispute with synthetic documents, pre-filled.
-- [ ] Opening **Demo case** shows the pre-filled description, answers, and documents; generating its packet produces the success state above.
+- [ ] Opening **Demo case** shows the pre-filled description, answers, and documents; generating its packet produces the success state above instantly, without an API call, as long as the demo hasn't been edited.
 - [ ] Demo case has a **Reset demo** action that restores it to its original state.
 - [ ] Working in one tab doesn't change the other.
 
@@ -77,21 +77,22 @@ Source: `scope.md > The Unique Kernel`.
 
 ### Review packet
 Source: `scope.md > What "Working" Looks Like`.
-- **Needs attention (first):** conflicts between documents or between documents and the user's statements, shown side by side with both sources, neither silently chosen; and must-resolve gaps (location unknown, amount unknown, etc.).
-- **Follow-up questions:** each says *why it matters* for organizing the case (e.g. "the amount you claim depends on which figure is right"). Where California procedure is relevant (e.g. where to file, serving the other party), the question links to a hand-picked official California Courts self-help page with a last-checked date. The AI never writes legal citations; it never predicts outcomes or says who's right.
+- **Key flags (first):** each place where a document disagrees with what the user said, shown as "You said" next to the document's exact excerpt, neither silently chosen. Code confirms the mismatch where it can (the excerpt really contains an address; the amounts or dates really differ) and marks the rest *AI interpretation*.
+- **Next steps:** a short ordered list of actions (rule-based ones for must-resolve gaps such as location unknown or amount unknown, plus up to 5 AI-suggested ones). Each says *why it matters* for organizing the case (e.g. "the amount you claim depends on which figure is right"). Where California procedure is relevant, it has a short "Additional info" link to a hand-picked official California Courts self-help page with a last-checked date. The AI never writes legal citations; it never predicts outcomes or says who's right.
+- **Packet details (collapsed on screen, expanded in print):** the sections below, plus differences between documents (e.g. contract $2,400 vs. invoice $2,800), shown quietly since the user usually already knows them.
 - **Statements:** each user statement is marked **✓ backed by** (click to reveal source + excerpt) or **⚠ your word only**.
 - **Timeline:** events in date order; events without a known date are listed separately as "date unknown," never guessed.
 - **Evidence list:** each document with what it was used to support.
 - **Case summary:** built only from the user's labeled statements and backed facts; conflicts and unknowns are preserved, not smoothed over.
-- [ ] On the demo case, a conflict (e.g. $2,400 vs. $2,800) appears at the top of the packet with both excerpts.
-- [ ] Answering "no" or "not sure" to the location question produces a must-resolve gap with a follow-up question linking an official California Courts page.
+- [ ] On the demo case, a key flag at the top shows what the user said next to the contradicting excerpt (location "no" vs. the address on the invoice).
+- [ ] Answering "no" or "not sure" to the location question produces a next step linking an official California Courts page.
 - [ ] Clicking a ✓ backed statement reveals its document name and excerpt.
 - [ ] A statement with no supporting document is shown as ⚠ your word only, never as fact.
 - [ ] Missing dates or amounts show as "unknown," never invented.
 
 ### Editing
 Source: `scope.md > The Core Loop`.
-- The user can edit the summary and the wording of statements and follow-up answers.
+- The user can edit the summary and the wording of statements and notes on next steps.
 - **✓ backed only ever comes from a document excerpt.** The user can't mark a statement as backed by hand; to back it, they add a document.
 - [ ] There is no control that marks a statement as backed without an excerpt.
 - [ ] Edits remain after regenerating where the underlying item still exists *(assumption, see Open Questions)*.
@@ -105,25 +106,26 @@ Source: `scope.md > The Core Loop`.
 ## States and Boundaries
 - **First use:** My case is empty with Step 1 open; a hint points to the Demo case tab to see an example.
 - **Nothing to generate:** with no description and no documents, Generate packet is disabled with a short reason.
-- **No documents:** a packet can still be generated; every statement is ⚠ your word only and the follow-ups ask for evidence.
+- **No documents:** a packet can still be generated; every statement is ⚠ your word only and the next steps ask for evidence.
 - **Extraction failed for one document:** that document shows "failed" with a retry/remove option; the rest of the packet still works.
 - **AI returns malformed output:** the app shows a friendly error and keeps the user's inputs; nothing crashes, and nothing unverified is shown as backed.
-- **Some facts unknown:** the packet still generates, showing "unknown" and matching follow-up questions.
+- **Some facts unknown:** the packet still generates, showing "unknown" and matching next steps.
 - **Persistence:** the case (inputs, documents, packet, edits) is still there after closing and reopening the browser, until the user clicks Clear case.
 
 ## Product Decisions
 - **Separate steps**, not one long page — matches how the learner thinks about the process.
-- **Problems first** in the packet — what's wrong is what you need to act on before a hearing.
+- **Problems first** in the packet — key flags (what you said vs. your documents) and next steps; everything else is details. Revised at the slice 3 checkpoint: document-vs-document conflicts were floating information the user already knew.
+- **Demo replays saved results** — trying the demo is instant and costs nothing; API calls are for the user's own case.
 - **Clarifying questions at every phase** (Describe, Add evidence, Review) — "I wish I would have been asked clarifying questions on every phase."
 - **Ask whether you know their location, not the address** — flags the gap where the learner's first case stalled without storing personal data.
 - **✓ backed only from excerpts** — protects the kernel; users can't hand-promote their own claims.
 - **Case persists** across browser sessions until cleared.
-- **Demo case as its own tab** with a reset.
+- **Demo case as its own tab** with a reset. Its packet comes from a saved recording of real AI results, re-checked by code on every view.
 - **California procedure via hand-picked official links**, never AI-generated citations (from `2-scope`).
 - **Look:** clean like a bank app, using lazare.herzi.ai's palette and Geist type.
 
 ## What We're Building
-Everything in **Features and Behavior** and **States and Boundaries** above: notice, My case / Demo case tabs with reset, Describe questions, Add evidence with upload/paste/remove and backing prompts, AI extraction checked against real excerpts, a problems-first packet with follow-ups and official links, editing that can't fake proof, print, clear case, and persistence.
+Everything in **Features and Behavior** and **States and Boundaries** above: notice, My case / Demo case tabs with reset, Describe questions, Add evidence with upload/paste/remove and backing prompts, AI extraction checked against real excerpts, a problems-first packet (key flags, next steps) with official links, editing that can't fake proof, print, clear case, and persistence.
 
 ## Deferred From the POC
 - **Serving the other party** (service plan/checklist) — the learner's own sticking point, but it's a second product; `scope.md > Later`.

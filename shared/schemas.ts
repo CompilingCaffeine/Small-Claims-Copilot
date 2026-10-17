@@ -80,30 +80,28 @@ export type FollowUpTopic = z.infer<typeof FollowUpTopic>;
 /** The analysis after the server has validated every reference in Claude's answer. */
 export const Analysis = z.object({
   statements: z.array(UserStatement),
-  links: z.array(z.object({ statementId: z.string(), supports: z.array(z.string()), contradicts: z.array(z.string()) })),
-  conflicts: z.array(
-    z.object({ factIds: z.array(z.string()), statementIds: z.array(z.string()), subject: z.string(), note: z.string() }),
+  links: z.array(
+    z.object({ statementId: z.string(), supports: z.array(z.string()), contradicts: z.array(z.string()), note: z.string() }),
   ),
-  followUps: z.array(z.object({ question: z.string(), whyItMatters: z.string(), topic: FollowUpTopic })),
+  // Differences between documents only; disagreements with the user become key flags via links.
+  conflicts: z.array(z.object({ factIds: z.array(z.string()), subject: z.string(), note: z.string() })),
+  nextSteps: z.array(z.object({ action: z.string(), whyItMatters: z.string(), topic: FollowUpTopic })),
   summary: z.string(),
   droppedClaimCount: z.number().int(),
 });
 export type Analysis = z.infer<typeof Analysis>;
 
-export const Gap = z.object({ id: z.string(), title: z.string(), detail: z.string() });
-export type Gap = z.infer<typeof Gap>;
-
 export const OfficialLink = z.object({ title: z.string(), url: z.string(), lastChecked: z.string() });
 export type OfficialLink = z.infer<typeof OfficialLink>;
 
-export const FollowUp = z.object({
+export const NextStep = z.object({
   id: z.string(),
-  question: z.string(),
+  action: z.string(),
   whyItMatters: z.string(),
   origin: z.enum(["rule", "ai"]),
   link: OfficialLink.optional(),
 });
-export type FollowUp = z.infer<typeof FollowUp>;
+export type NextStep = z.infer<typeof NextStep>;
 
 export const TimelineEvent = z.object({
   id: z.string(),
@@ -129,9 +127,21 @@ export const StatementResult = z.object({
 });
 export type StatementResult = z.infer<typeof StatementResult>;
 
+// A place where a document disagrees with something the user said. "checked" means
+// code confirmed the mismatch; otherwise it's the AI's reading, with a verified quote.
+export const Flag = z.object({
+  id: z.string(),
+  basis: z.enum(["checked", "ai_interpretation"]),
+  statement: UserStatement,
+  factIds: z.array(z.string()),
+  note: z.string().optional(),
+});
+export type Flag = z.infer<typeof Flag>;
+
 export const Packet = z.object({
-  needsAttention: z.object({ conflicts: z.array(Conflict), gaps: z.array(Gap) }),
-  followUps: z.array(FollowUp),
+  flags: z.array(Flag),
+  nextSteps: z.array(NextStep),
+  documentDifferences: z.array(Conflict),
   statements: z.array(StatementResult),
   timeline: z.array(TimelineEvent),
   undated: z.array(TimelineEvent),
@@ -148,7 +158,9 @@ export const CaseState = z.object({
   facts: z.record(z.string(), DocumentFacts),
   // Claude's validated answer. The packet itself is rebuilt from this plus the current
   // documents on every render, so removing a document immediately removes its backing.
-  analysis: Analysis.nullable(),
+  // An analysis saved by an older version that no longer fits is dropped (regenerate),
+  // rather than discarding the whole case.
+  analysis: Analysis.nullable().catch(null),
   edits: z.record(z.string(), z.string()),
   generatedAt: z.string().nullable(),
 });

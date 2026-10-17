@@ -26,12 +26,12 @@ const good = {
     { key: "d2", text: "They finished on time.", quote: "They finished on time" }, // not in the description
   ],
   links: [
-    { statementId: "d1", supports: ["doc1-f1", "invented-fact"], contradicts: [] },
-    { statementId: "ans-amount", supports: ["doc1-f1"], contradicts: [] },
-    { statementId: "ghost-statement", supports: ["doc1-f1"], contradicts: [] },
+    { statementId: "d1", supports: ["doc1-f1", "invented-fact"], contradicts: ["invented-fact"], note: "Made up." },
+    { statementId: "ans-amount", supports: [], contradicts: ["doc1-f1"], note: "You wrote $2,400 owed; the contract total is $2,400." },
+    { statementId: "ghost-statement", supports: ["doc1-f1"], contradicts: [], note: "" },
   ],
-  conflicts: [{ factIds: ["doc1-f1", "nope"], statementIds: ["d1"], subject: "price", note: "Two prices." }],
-  followUps: [{ question: "Do you have the invoice?", whyItMatters: "The amount depends on it.", topic: "evidence_prep", relatedIds: [] }],
+  conflicts: [{ factIds: ["doc1-f1", "nope"], subject: "price", note: "Two prices." }],
+  nextSteps: [{ action: "Find the invoice.", whyItMatters: "The amount depends on it.", topic: "evidence_prep" }],
   summary: "The contract shows $2,400.",
 };
 
@@ -47,10 +47,12 @@ describe("POST /api/analyze", () => {
     const descId = ids[1];
     expect(descId).toMatch(/^desc-/);
     expect(res.body.links).toEqual([
-      { statementId: descId, supports: ["doc1-f1"], contradicts: [] },
-      { statementId: "ans-amount", supports: ["doc1-f1"], contradicts: [] },
+      { statementId: descId, supports: ["doc1-f1"], contradicts: [], note: "" },
+      { statementId: "ans-amount", supports: [], contradicts: ["doc1-f1"], note: "You wrote $2,400 owed; the contract total is $2,400." },
     ]);
-    expect(res.body.conflicts).toEqual([{ factIds: ["doc1-f1"], statementIds: [descId], subject: "price", note: "Two prices." }]);
+    // A difference needs two real facts; one surviving reference isn't a difference.
+    expect(res.body.conflicts).toEqual([]);
+    expect(res.body.nextSteps).toEqual([{ action: "Find the invoice.", whyItMatters: "The amount depends on it.", topic: "evidence_prep" }]);
   });
 
   it("gives description claims the same ID on every run", async () => {

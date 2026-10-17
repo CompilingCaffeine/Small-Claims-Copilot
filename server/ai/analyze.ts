@@ -10,13 +10,11 @@ import { ANALYZE_SYSTEM, analyzeUserMessage } from "./prompts.ts";
 /** What Claude is asked to return for the whole case. */
 export const AnalyzeOutput = z.object({
   descriptionClaims: z.array(z.object({ key: z.string(), text: z.string(), quote: z.string() })),
-  links: z.array(z.object({ statementId: z.string(), supports: z.array(z.string()), contradicts: z.array(z.string()) })),
-  conflicts: z.array(
-    z.object({ factIds: z.array(z.string()), statementIds: z.array(z.string()), subject: z.string(), note: z.string() }),
+  links: z.array(
+    z.object({ statementId: z.string(), supports: z.array(z.string()), contradicts: z.array(z.string()), note: z.string() }),
   ),
-  followUps: z.array(
-    z.object({ question: z.string(), whyItMatters: z.string(), topic: FollowUpTopic, relatedIds: z.array(z.string()) }),
-  ),
+  conflicts: z.array(z.object({ factIds: z.array(z.string()), subject: z.string(), note: z.string() })),
+  nextSteps: z.array(z.object({ action: z.string(), whyItMatters: z.string(), topic: FollowUpTopic })),
   summary: z.string(),
 });
 export type AnalyzeOutput = z.infer<typeof AnalyzeOutput>;
@@ -79,21 +77,26 @@ export function validateAnalysis(
   const resolve = (id: string) => keyToId.get(id) ?? id;
   const factIds = new Set(facts.map((f) => f.id));
   const knownFacts = (ids: string[]) => [...new Set(ids.filter((id) => factIds.has(id)))];
-  const knownStatements = (ids: string[]) => [...new Set(ids.map(resolve).filter((id) => statementIds.has(id)))];
 
   const links = out.links
-    .map((l) => ({ statementId: resolve(l.statementId), supports: knownFacts(l.supports), contradicts: knownFacts(l.contradicts) }))
+    .map((l) => {
+      const contradicts = knownFacts(l.contradicts);
+      // A note only means something next to the contradiction it explains.
+      return { statementId: resolve(l.statementId), supports: knownFacts(l.supports), contradicts, note: contradicts.length ? l.note.trim() : "" };
+    })
     .filter((l) => statementIds.has(l.statementId));
 
   const conflicts = out.conflicts
-    .map((c) => ({ factIds: knownFacts(c.factIds), statementIds: knownStatements(c.statementIds), subject: c.subject.trim(), note: c.note.trim() }))
-    .filter((c) => c.factIds.length + c.statementIds.length >= 2 && c.factIds.length >= 1);
+    .map((c) => ({ factIds: knownFacts(c.factIds), subject: c.subject.trim(), note: c.note.trim() }))
+    .filter((c) => c.factIds.length >= 2);
 
   return {
     statements,
     links,
     conflicts,
-    followUps: out.followUps.slice(0, 5).map(({ question, whyItMatters, topic }) => ({ question, whyItMatters, topic })),
+    nextSteps: out.nextSteps
+      .slice(0, 5)
+      .map(({ action, whyItMatters, topic }) => ({ action: action.trim(), whyItMatters: whyItMatters.trim(), topic })),
     summary: out.summary.trim(),
     droppedClaimCount,
   };

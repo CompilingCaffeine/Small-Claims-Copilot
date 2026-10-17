@@ -1,5 +1,5 @@
 import { verifiedFacts } from "../shared/packet.ts";
-import type { CaseState, DocumentFacts, SourceDocument } from "../shared/schemas.ts";
+import type { Analysis, CaseState, DocumentFacts, SourceDocument } from "../shared/schemas.ts";
 import { analyzeCase, extractFacts } from "./api.ts";
 
 import type { Update } from "./state/caseStore.ts";
@@ -29,10 +29,19 @@ export async function extractDocument(doc: SourceDocument, update: Update): Prom
 
 /**
  * Extracts any documents not yet read (cached facts are reused), then asks for the
- * analysis. Returns an error message, or null on success. On failure the previous
- * analysis and all inputs are kept.
+ * analysis. With a replay (the unedited demo), uses the saved results instead of the
+ * API. Returns an error message, or null on success. On failure the previous analysis
+ * and all inputs are kept.
  */
-export async function generatePacket(state: CaseState, update: Update): Promise<string | null> {
+export async function generatePacket(
+  state: CaseState,
+  update: Update,
+  replay?: Pick<CaseState, "facts"> & { analysis: Analysis } | null,
+): Promise<string | null> {
+  if (replay) {
+    update((s) => ({ ...s, facts: replay.facts, analysis: replay.analysis, generatedAt: new Date().toISOString() }));
+    return null;
+  }
   const toExtract = state.documents.filter((d) => d.status === "ready" && state.facts[d.id]?.status !== "done");
   const results = await Promise.all(toExtract.map((doc) => extractDocument(doc, update)));
   // Combine results directly: React may not have applied the state updates yet.

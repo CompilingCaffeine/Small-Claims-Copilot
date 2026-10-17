@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ConfirmDialog } from "./components/ConfirmDialog.tsx";
 import { Notice } from "./components/Notice.tsx";
+import { demoReplay } from "./demo/demoReplay.ts";
 import { generatePacket } from "./generate.ts";
 import { useCases, type Tab } from "./state/caseStore.ts";
 import { DescribeStep } from "./steps/DescribeStep.tsx";
@@ -24,7 +25,8 @@ export default function App() {
     const forTab = tab;
     setGenerating(forTab);
     setErrors((e) => ({ ...e, [forTab]: null }));
-    const failure = await generatePacket(state, updateFor(forTab));
+    const replay = forTab === "demo" ? demoReplay(state) : null;
+    const failure = await generatePacket(state, updateFor(forTab), replay);
     setGenerating(null);
     if (failure) setErrors((e) => ({ ...e, [forTab]: failure }));
     else setSteps((all) => ({ ...all, [forTab]: 2 }));
@@ -75,8 +77,8 @@ export default function App() {
       )}
       {tab === "demo" && (
         <div className="banner info no-print">
-          Demo case: a fictional dispute with made-up documents. Generate the packet to see how it works. Reset demo restores
-          it.
+          Demo case: a fictional dispute with made-up documents. Generating it replays a saved AI run, so it's instant and
+          free; once you edit it, it calls the AI like your own case. Reset demo restores it.
         </div>
       )}
 

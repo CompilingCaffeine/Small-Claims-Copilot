@@ -7,13 +7,19 @@ const base = emptyCase().input;
 describe("answerStatements", () => {
   it("turns answers into the user's statements with fixed IDs", () => {
     const s = answerStatements({ ...base, amountOwed: "$2,800", overdue: "6 weeks", saidWontPay: "yes", knowsLocation: "no" });
-    expect(s.map((x) => x.id)).toEqual(["ans-amount", "ans-overdue", "ans-said-wont-pay"]);
+    expect(s.map((x) => x.id)).toEqual(["ans-amount", "ans-overdue", "ans-said-wont-pay", "ans-knows-location"]);
     expect(s[0]!.text).toBe("The other party owes me $2,800.");
     expect(s.every((x) => x.origin === "answer")).toBe(true);
   });
 
+  it("records not knowing where the other party is, so a document with their address can be flagged", () => {
+    const [no] = answerStatements({ ...base, knowsLocation: "no" });
+    expect(no).toMatchObject({ id: "ans-knows-location", text: "I don't know where the other party lives or does business." });
+    expect(answerStatements({ ...base, knowsLocation: "not_sure" })[0]!.text).toMatch(/^I'm not sure where/);
+  });
+
   it("lets every field be blank or not sure", () => {
-    expect(answerStatements({ ...base, saidWontPay: "not_sure", knowsLocation: "not_sure" })).toEqual([]);
+    expect(answerStatements({ ...base, saidWontPay: "not_sure" })).toEqual([]);
   });
 });
 

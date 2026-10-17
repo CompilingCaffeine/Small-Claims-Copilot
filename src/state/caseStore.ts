@@ -7,7 +7,9 @@ import { demoCase } from "../demo/demoCase.ts";
 export type Tab = "my" | "demo";
 export type Update = (fn: (s: CaseState) => CaseState) => void;
 
-export const STORAGE_KEYS: Record<Tab, string> = { my: "scc:case:my", demo: "scc:case:demo" };
+// The demo key carries a version: when the demo story changes, browsers load the new
+// demo (which matches the saved replay) instead of an outdated copy.
+export const STORAGE_KEYS: Record<Tab, string> = { my: "scc:case:my", demo: "scc:case:demo:v2" };
 const TAB_KEY = "scc:tab";
 
 function initial(tab: Tab): CaseState {

@@ -39,7 +39,17 @@ Build mode: fast (chosen by learner; pauses at the slice 3 checkpoint and final 
   Learner check: Open Demo case and generate. The $2,400 vs $2,800 conflict should be first, with both excerpts, followed by the location gap and its official link. Type something in My case, switch tabs and back, close the browser and reopen it: both cases should be as you left them. Try Reset demo, and Clear case on My case.
   Commit: `Add demo case, conflict and gap flags, and saved cases`
 
-- [ ] **4. Upload real .txt and .pdf files, with clear failures**
+- [x] **4. Key flags and next steps lead the packet; the demo replays saved results**
+  Becomes usable: Review packet opens with Key flags (what you said next to the document excerpt that disagrees, "checked by code" or AI interpretation), then Next steps (ordered actions, each with why it matters and a short "Additional info" link). Statements, differences between documents, and the summary sit in collapsed Packet details. On the demo, you said "no" to knowing where Ridgeline does business but the invoice lists an address, and you said a $500 deposit but the receipt says $600; both are flagged. Generating the unedited demo is instant and free.
+  Why now: Learner feedback at the slice 3 checkpoint: document-vs-document conflicts were floating information they already knew, the review needed to lead with key flags and next steps, and a demo generate cost $0.60, not $0.22. Uploads and the finished packet both build on this layout, so it goes first.
+  PRD ref: `prd.md > Review packet`, `prd.md > Case tabs and demo case`, `prd.md > Product Decisions`
+  Spec ref: `spec.md > Packet assembly` (Key flags, Next steps, Differences between documents), `spec.md > Analysis`, `spec.md > Demo case` (Replay), `spec.md > Review step`
+  Build: `shared/address.ts`, `shared/flags.ts`, `shared/nextSteps.ts` (replaces `gaps.ts`), the "don't know / not sure" location statement, analysis prompt and schema (`links[].note`, document-only conflicts, `nextSteps`), `packet/KeyFlags`, `packet/NextSteps` ("Additional info" links), `packet/Details` (collapsed, expanded in print), demo story edits, `scripts/record-demo.ts` + `npm run record-demo`, `src/demo/demoReplay.ts` + `demoResults.json`, and a stale saved analysis that no longer fits the schema is dropped instead of wiping the case.
+  Verify (mechanical): `npm test` passes `address`, `flags` (location flag checked only when the excerpt is an address; amount flag checked only when values differ; otherwise AI interpretation), `nextSteps`, updated packet/analyze tests, and `demoReplay` (recording matches the demo fingerprint, every recorded excerpt verifies, the packet has the checked location and deposit flags). `npm run typecheck` is clean. Live: `npm run record-demo` once; in the browser, the demo generates with no `/api` calls.
+  Learner check: Open Demo case → Add evidence → Generate packet. It should finish instantly. Read Key flags and Next steps, then open Packet details. Edit the demo description and generate again to see it call the API live (optional, ≈ $0.15–0.60).
+  Commit: `Lead the packet with key flags and next steps; replay saved demo results`
+
+- [ ] **5. Upload real .txt and .pdf files, with clear failures**
   Becomes usable: Drag in or pick `.txt`/`.pdf` files (up to 10, 2 MB each). Each shows its filename and status (reading / ready / failed) with Remove and Retry. Wrong types, oversized files, an 11th document, and scanned PDFs get clear messages, and one failed document doesn't stop the packet. `demo-files/` holds the demo documents as real files, including the invoice as a PDF.
   Why now: Paste already proves the kernel, so file handling is the next real behavior. It brings its own risks (PDF text extraction, limits) that should be settled before the packet is finished. The prompt-injection test belongs here too because uploaded files are the main way untrusted text gets in.
   PRD ref: `prd.md > Add evidence`, `prd.md > Generate packet` (document instructions treated as content), `prd.md > States and Boundaries` (Extraction failed for one document)
@@ -49,19 +59,19 @@ Build mode: fast (chosen by learner; pauses at the slice 3 checkpoint and final 
   Learner check: In My case, upload the files from `demo-files/`, including the PDF, and watch each one go from reading to ready. Try an image or a big file and read the message. Remove a document, regenerate, and confirm nothing from it remains in the packet.
   Commit: `Upload txt and pdf documents with limits and failure states`
 
-- [ ] **5. A complete packet you can edit and print**
-  Becomes usable: Review packet is complete, in order: Needs attention → Follow-ups → Statements → Timeline (dated events sorted, undated listed as "date unknown") → Evidence list (each document and what it backs) → Case summary (labeled AI interpretation). You can edit the summary, statement wording, and follow-up answers, and edits survive regenerating. Print gives a clean packet with no buttons, excerpts expanded, statuses written out, and the notice included. README covers setup, the demo, limitations, and data handling.
+- [ ] **6. A complete packet you can edit and print**
+  Becomes usable: Review packet is complete: Key flags → Next steps → Packet details with Statements, Timeline (dated events sorted, undated listed as "date unknown"), Evidence list (each document and what it backs), Differences between documents, and Case summary (labeled AI interpretation). You can edit the summary, statement wording, and notes on next steps, and edits survive regenerating. Print gives a clean packet with no buttons, excerpts expanded, statuses written out, and the notice included. README covers setup, the demo, limitations, and data handling.
   Why now: These sections all build on facts and statements that already exist, so they're lower risk and best done last. Finishing here leaves the full core journey for final review.
   PRD ref: `prd.md > Review packet` (Timeline, Evidence list, Case summary), `prd.md > Editing`, `prd.md > Print`, `prd.md > The Core Journey` (step 7)
   Spec ref: `spec.md > Packet assembly` (Timeline, Evidence list, Summary), `spec.md > Editing`, `spec.md > Review step`, `spec.md > Look and Feel` (Print), `spec.md > File Structure` (README.md)
-  Build: `shared/timeline.ts`, `packet/Timeline`, `packet/EvidenceList`, `packet/Summary`, `packet/Editable` (edits by stable ID), follow-up answer fields, print CSS + Print button, `README.md`.
+  Build: `shared/timeline.ts`, `packet/Timeline`, `packet/EvidenceList`, `packet/Summary`, `packet/Editable` (edits by stable ID), notes on next steps, print CSS + Print button, `README.md`.
   Verify (mechanical): `npm test` passes `timeline.test.ts` (sorted; undated separated; missing date → unknown) and packet tests for evidence rows, edits reapplied by ID after reassembly, and unknown amounts shown as unknown. `npx tsc --noEmit` and `npm run build` are clean. Live: the full demo journey generates every section.
   Learner check: Generate the demo packet, read it top to bottom, edit the summary and one statement's wording, regenerate, and confirm your edits are still there. Open the print preview and check that it reads like a clean document you could hand to someone.
   Commit: `Complete packet with timeline, evidence list, editing, and print`
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 3 (demo case with the conflict flag, statements, saved cases)
+- [x] Early usable behavior explored — after slice 3 (demo case with the conflict flag, statements, saved cases). Feedback: PDF upload missing (already slice 5); review should lead with next steps and key flags; doc-vs-doc conflicts were low-value and too prominent, flag what you said vs. the evidence instead; demo cost $0.60, so replay saved results. Resolved by the new slice 4.
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
@@ -94,3 +104,10 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - The analysis prompt now tells Claude the app already asks about location, amount, and unbacked statements — the first live demo repeated the location question three times.
 - Official links (checked 2026-10-17, all 200): where to file and evidence prep → "Before you start a small claims case" (its "Where they are" and "You have proof" sections); serving → "Serve your small claims forms"; amount limits → "Small claims in California." No single official page covers which court to file in, so the location follow-up points to "Where they are."
 - Demo story: Jordan (homeowner) paid the $2,800 invoice under protest and claims $400 back; the text thread and deposit receipt were added as fictional documents. A full live demo generate measured ≈ $0.22.
+- Slice 3 checkpoint feedback (learner's decision, touches the Unique Kernel): key flags now compare what you said against your documents, code-checked where possible (address excerpt, differing amounts/dates); differences between documents move to collapsed Packet details. The review leads with Key flags → Next steps, and follow-up questions become next steps with short "Additional info" links. `scope.md`, `prd.md`, `spec.md` updated; new slice 4 inserted, uploads and the finished packet renumbered 5 and 6.
+- Cost corrected again: the learner's bill showed ≈ $0.60 for one full demo generate, not ≈ $0.22 (the earlier figure multiplied logged tokens by assumed prices). The demo now replays a saved recording, so API spend is only for the user's own case.
+- Demo story: the invoice letterhead lists Ridgeline's (old) address and the description misremembers the deposit as $500 (receipt: $600), so the demo shows both a checked location flag and a checked amount flag.
+- Next steps link each official page only once (the first step that needs it): in the first recording every AI step had topic `evidence_prep`, so seven steps repeated the same "Additional info" link. AI steps are tagged "AI suggestion" rather than "AI interpretation".
+- The demo's localStorage key is now versioned (`scc:case:demo:v2`): a browser holding the old demo would never match the recording's fingerprint and would quietly call the API.
+- Recorded demo run: 4 extractions (50 facts, 0 dropped) + 1 analysis, ≈ 13k input / 8.6k output tokens.
+- `devpost/scope.html`, `prd.html`, `spec.html` were not regenerated for these edits; the `.md` files are the source of truth.

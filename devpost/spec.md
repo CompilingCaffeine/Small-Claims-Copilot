@@ -86,7 +86,8 @@ PRD ref: `prd.md > Not-legal-advice notice`, `prd.md > Screens and Layout`, `prd
 PRD ref: `prd.md > Case tabs and demo case`, `prd.md > States and Boundaries` (Persistence).
 
 ### Demo case
-`src/demo/demoCase.ts` + `demo-files/`. A fictional contractor payment dispute: synthetic names, a contract (.txt, total $2,400, finish by a fixed date), an invoice (**.pdf**, amount due $2,800), a text-message thread (.txt), a deposit receipt (.txt). Describe answers pre-filled, location = "no." The seeded demo stores already-extracted page text, so the tab works instantly; `demo-files/` holds the same files for live upload. All content labeled fictional.
+`src/demo/demoCase.ts` + `demo-files/`. A fictional contractor payment dispute: synthetic names, a contract (.txt, total $2,400, finish by a fixed date), an invoice (**.pdf**, amount due $2,800), a text-message thread (.txt), a deposit receipt (.txt). Describe answers pre-filled, location = "no"; the invoice letterhead lists Ridgeline's (old) address and the description misremembers the deposit as $500 (receipt: $600), so the demo shows key flags. The seeded demo stores already-extracted page text; `demo-files/` holds the same files for live upload. All content labeled fictional.
+**Replay:** `src/demo/demoResults.json` holds one recorded run of real extraction + analysis (`npm run record-demo`, ≈ $0.60). While the demo's input and documents match the recording's fingerprint, Generate loads it instead of calling the API; the packet is still assembled and every excerpt re-checked by code. An edited demo generates live. A test fails if the recording stops matching the demo.
 PRD ref: `prd.md > Case tabs and demo case`.
 
 ### Describe step
@@ -106,22 +107,22 @@ PRD ref: `prd.md > Add evidence`.
 PRD ref: `prd.md > Generate packet`.
 
 ### Analysis
-`server/ai/analyze.ts`, `POST /api/analyze`. One Claude call with the user's statements, the description, and the verified facts (IDs, values, excerpts). Returns description claims, statement links (`supports` / `contradicts` fact IDs), possible conflicts (fact IDs), follow-up questions with `whyItMatters` and a `topic`, and a short summary. Server validation: drop unknown fact IDs; drop description claims whose `quote` isn't in the description.
+`server/ai/analyze.ts`, `POST /api/analyze`. One Claude call with the user's statements, the description, and the verified facts (IDs, values, excerpts). Returns description claims, statement links (`supports` / `contradicts` fact IDs), a one-line `note` for each contradiction, differences between documents (fact IDs), next steps with `whyItMatters` and a `topic`, and a short summary. Server validation: drop unknown fact IDs; drop description claims whose `quote` isn't in the description.
 PRD ref: `prd.md > Generate packet`, `prd.md > Review packet`.
 
 ### Packet assembly
 `shared/packet.ts` (pure, runs in browser). Inputs: case input, documents, verified facts, validated analysis. Produces the `Packet`:
 - **Statements:** backed iff ≥1 supporting fact ID exists; otherwise your word only. No other path to backed.
-- **Conflicts** (`shared/conflicts.ts`): (a) code-detected: same `category` + `subject` with different normalized values across facts → `basis: "checked"`; (b) AI-proposed doc↔doc or statement↔doc: kept with `basis: "checked"` if code confirms the normalized values differ, else `basis: "ai_interpretation"`. Both sides shown, neither chosen.
-- **Gaps** (`shared/gaps.ts`): rule-based: location ≠ yes, amount blank, no documents, failed documents.
-- **Follow-ups:** rule-based (from gaps and unbacked statements) + AI-proposed; `topic` → `shared/officialLinks.ts` link with last-checked date (topics: `where_to_file`, `serving`, `amount_limits`, `evidence_prep`, `none`).
+- **Key flags** (`shared/flags.ts`): every statement with verified contradicting facts (from the AI's `contradicts` links, with its one-line note). `basis: "checked"` when code confirms it: for "I don't know where they live or do business," the excerpt looks like an address (street, city/state ZIP, or PO box); for statements with amounts or dates, a contradicting fact's normalized value isn't among the statement's. Otherwise `basis: "ai_interpretation"`.
+- **Next steps** (`shared/nextSteps.ts`): rule-based (failed documents, no documents, key flags to resolve, location ≠ yes, amount unknown, unbacked statements) + up to 5 AI-proposed actions; `topic` → `shared/officialLinks.ts` link shown as "Additional info" with last-checked date (topics: `where_to_file`, `serving`, `amount_limits`, `evidence_prep`, `none`).
+- **Differences between documents** (`shared/conflicts.ts`, packet details): code-detected (same single-valued subject, different normalized values) or AI-proposed doc↔doc, `checked` if values differ, else `ai_interpretation`.
 - **Timeline** (`shared/timeline.ts`): dated facts sorted; undated events in a separate "date unknown" list.
 - **Evidence list:** each document, its fact count, and which statements it backs.
 - **Summary:** AI text labeled `AI interpretation, review and edit`.
 PRD ref: `prd.md > Review packet`.
 
 ### Review step
-`src/steps/ReviewStep.tsx` + `src/packet/*`. Order: NeedsAttention → FollowUps → Statements → Timeline → EvidenceList → Summary. `SourceExcerpt` shows filename + page + excerpt (Geist Mono) on click. Print button.
+`src/steps/ReviewStep.tsx` + `src/packet/*`. Order: KeyFlags → NextSteps → collapsed Packet details (Statements → Timeline → EvidenceList → Differences between documents → Summary), expanded in print. `SourceExcerpt` shows filename + page + excerpt (Geist Mono) on click. Print button.
 PRD ref: `prd.md > Review packet`, `prd.md > Print`.
 
 ### Editing
@@ -171,7 +172,7 @@ The four kinds of information the handoff requires stay distinct: **your stateme
 ```
 Small-Claims-Copilot/
 ├── index.html                 # Vite entry; loads Geist fonts
-├── package.json               # scripts: dev, test, test:live, build
+├── package.json               # scripts: dev, test, test:live, build, record-demo
 ├── tsconfig.json
 ├── vite.config.ts             # React plugin; proxy /api → http://localhost:3001
 ├── .env.example               # ANTHROPIC_API_KEY= (secret-free)
@@ -182,8 +183,10 @@ Small-Claims-Copilot/
 │   ├── excerpt.ts             # normalize text; findExcerpt(pages, quote) → { page } | null
 │   ├── normalize.ts           # "$2,400" → 240000 cents; dates → ISO or unknown
 │   ├── statements.ts          # Describe answers → UserStatements + backing prompts
-│   ├── conflicts.ts           # code-detected + validated AI conflicts
-│   ├── gaps.ts                # must-resolve gaps + rule follow-ups
+│   ├── conflicts.ts           # differences between documents (packet details)
+│   ├── flags.ts               # key flags: what you said vs. your documents, code-checked where possible
+│   ├── address.ts             # looksLikeAddress(): street, city/state ZIP, or PO box
+│   ├── nextSteps.ts           # rule-based next steps (gaps, flags, unbacked statements)
 │   ├── timeline.ts            # sort dated, separate undated
 │   ├── officialLinks.ts       # curated California Courts links + lastChecked
 │   └── packet.ts              # assemblePacket(): the referee
@@ -202,9 +205,12 @@ Small-Claims-Copilot/
 │   ├── styles.css             # tokens (light/dark), layout, print
 │   ├── state/caseStore.ts     # useCase(tab): localStorage load/save/clear/reset
 │   ├── demo/demoCase.ts       # seeded fictional case (pre-extracted text)
+│   ├── demo/demoReplay.ts     # fingerprint + saved-result replay for the unedited demo
+│   ├── demo/demoResults.json  # one recorded run of real extraction + analysis
 │   ├── components/            # Notice, StatusTag, SourceExcerpt, ConfirmDialog
 │   ├── steps/                 # DescribeStep, EvidenceStep, ReviewStep
-│   └── packet/                # NeedsAttention, FollowUps, Statements, Timeline, EvidenceList, Summary, Editable
+│   └── packet/                # KeyFlags, NextSteps, Details, Statements, Differences, Timeline, EvidenceList, Summary, Editable
+├── scripts/record-demo.ts     # runs the real API once on the demo and saves demoResults.json
 ├── demo-files/                # the demo's synthetic documents as real files (.txt + one .pdf) for live upload
 ├── tests/
 │   ├── fixtures/              # synthetic docs, injection doc, fake AI outputs (valid + malformed)
@@ -219,12 +225,12 @@ Small-Claims-Copilot/
 ### Claude API
 - **Call:** `client.messages.parse({ model: "claude-opus-5-5", max_tokens: 16000, output_config: { effort: "medium", format: zodOutputFormat(Schema) }, system, messages })` from `@anthropic-ai/sdk` (`zodOutputFormat` from `@anthropic-ai/sdk/helpers/zod`). Read `response.parsed_output`; if `null`, or `stop_reason` is `refusal` or `max_tokens`, treat as a failed step. Thinking is adaptive by default on Opus 5.5; don't send `thinking: disabled` (400).
 - **Extract output schema:** `{ facts: [{ category, subject, value, eventDate?, originalWording, excerpt }] }`. The model's page claims are ignored; code computes the page.
-- **Analyze output schema:** `{ descriptionClaims: [{ text, quote }], links: [{ statementId, supports: factId[], contradicts: factId[] }], conflicts: [{ factIds: string[], subject, note }], followUps: [{ question, whyItMatters, topic, relatedIds }], summary }`.
+- **Analyze output schema:** `{ descriptionClaims: [{ text, quote }], links: [{ statementId, supports: factId[], contradicts: factId[], note }], conflicts (between documents only): [{ factIds: string[], subject, note }], nextSteps: [{ action, whyItMatters, topic }], summary }`.
 - **Auth:** `ANTHROPIC_API_KEY` from `.env`, loaded server-side only (`process.loadEnvFile()` / `node --env-file`).
 - **Refusal fallback:** the API's server-side `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`) is recommended for Opus 5.5. **Verify early in the build** that it works with `messages.parse`; if not, skip it, since a refusal is already handled as a failed step.
 - **Retries/timeouts:** SDK defaults (2 retries on 429/5xx).
 - **Docs:** https://docs.claude.com/en/docs/build-with-claude/structured-outputs · https://docs.claude.com/en/api/messages
-- **Cost:** about $4 / $20 per million input/output tokens. A demo run is ~5 small calls; measure on the first live call.
+- **Cost:** a full 4-document case (4 extractions + 1 analysis) cost ≈ $0.60 on the learner's bill. The demo replays a saved recording, so it costs nothing to try.
 
 ### California Courts self-help (links only, no API)
 Hand-picked pages in `shared/officialLinks.ts`, each `{ topic, title, url, lastChecked }`, starting from https://selfhelp.courts.ca.gov/small-claims. Exact URLs for where to file, serving, and claim limits are **to be verified during the build** and dated on the day they're checked.

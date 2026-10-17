@@ -1,0 +1,909 @@
+{
+ "fingerprint": "demo-1tfyvda",
+ "recordedAt": "2026-10-17T13:20:30.235Z",
+ "facts": {
+  "demo-receipt": {
+   "status": "done",
+   "facts": [
+    {
+     "id": "demo-receipt-f1",
+     "documentId": "demo-receipt",
+     "category": "party",
+     "subject": "contractor_name",
+     "value": {
+      "type": "text",
+      "text": "Ridgeline Home Repair"
+     },
+     "originalWording": "The receipt is issued by Ridgeline Home Repair.",
+     "excerpt": "Ridgeline Home Repair",
+     "page": 1
+    },
+    {
+     "id": "demo-receipt-f2",
+     "documentId": "demo-receipt",
+     "category": "party",
+     "subject": "customer_name",
+     "value": {
+      "type": "text",
+      "text": "Jordan Avila"
+     },
+     "originalWording": "Payment was received from Jordan Avila.",
+     "excerpt": "Received from: Jordan Avila",
+     "page": 1
+    },
+    {
+     "id": "demo-receipt-f3",
+     "documentId": "demo-receipt",
+     "category": "payment",
+     "subject": "payment_date",
+     "value": {
+      "type": "date",
+      "iso": "2026-02-02"
+     },
+     "eventDate": "2026-02-02",
+     "originalWording": "The receipt is dated February 2, 2026.",
+     "excerpt": "Date: February 2, 2026",
+     "page": 1
+    },
+    {
+     "id": "demo-receipt-f4",
+     "documentId": "demo-receipt",
+     "category": "payment",
+     "subject": "deposit_paid",
+     "value": {
+      "type": "amount",
+      "cents": 60000
+     },
+     "originalWording": "An amount of $600.00 was received as a deposit.",
+     "excerpt": "Amount: $600.00",
+     "page": 1
+    },
+    {
+     "id": "demo-receipt-f5",
+     "documentId": "demo-receipt",
+     "category": "other",
+     "subject": "scope_of_work",
+     "value": {
+      "type": "text",
+      "text": "back deck job"
+     },
+     "originalWording": "The payment was a deposit on a back deck job.",
+     "excerpt": "For: Deposit on back deck job",
+     "page": 1
+    },
+    {
+     "id": "demo-receipt-f6",
+     "documentId": "demo-receipt",
+     "category": "date",
+     "subject": "agreement_date",
+     "value": {
+      "type": "date",
+      "iso": "2026-02-02"
+     },
+     "eventDate": "2026-02-02",
+     "originalWording": "The agreement for the job is dated February 2, 2026.",
+     "excerpt": "agreement dated February 2, 2026",
+     "page": 1
+    },
+    {
+     "id": "demo-receipt-f7",
+     "documentId": "demo-receipt",
+     "category": "payment",
+     "subject": "payment_method",
+     "value": {
+      "type": "text",
+      "text": "Check #2231"
+     },
+     "originalWording": "Payment was made by Check #2231.",
+     "excerpt": "Payment method: Check #2231",
+     "page": 1
+    },
+    {
+     "id": "demo-receipt-f8",
+     "documentId": "demo-receipt",
+     "category": "party",
+     "subject": "received_by",
+     "value": {
+      "type": "text",
+      "text": "Dale Prescott"
+     },
+     "originalWording": "The payment was received by Dale Prescott.",
+     "excerpt": "Received by: Dale Prescott",
+     "page": 1
+    },
+    {
+     "id": "demo-receipt-f9",
+     "documentId": "demo-receipt",
+     "category": "other",
+     "subject": "document_notice",
+     "value": {
+      "type": "text",
+      "text": "Fictional document for demonstration only"
+     },
+     "originalWording": "The document states it is fictional and for demonstration only.",
+     "excerpt": "FICTIONAL DOCUMENT FOR DEMONSTRATION ONLY",
+     "page": 1
+    }
+   ],
+   "droppedCount": 0
+  },
+  "demo-invoice": {
+   "status": "done",
+   "facts": [
+    {
+     "id": "demo-invoice-f1",
+     "documentId": "demo-invoice",
+     "category": "party",
+     "subject": "contractor_name",
+     "value": {
+      "type": "text",
+      "text": "Ridgeline Home Repair"
+     },
+     "originalWording": "The invoice is from Ridgeline Home Repair.",
+     "excerpt": "RIDGELINE HOME REPAIR",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f2",
+     "documentId": "demo-invoice",
+     "category": "party",
+     "subject": "business_address",
+     "value": {
+      "type": "text",
+      "text": "2150 Alder Creek Rd, Sacramento, CA 95826"
+     },
+     "originalWording": "Ridgeline Home Repair's address is 2150 Alder Creek Rd, Sacramento, CA 95826.",
+     "excerpt": "2150 Alder Creek Rd, Sacramento, CA 95826",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f3",
+     "documentId": "demo-invoice",
+     "category": "other",
+     "subject": "invoice_number",
+     "value": {
+      "type": "text",
+      "text": "1047"
+     },
+     "originalWording": "The invoice number is 1047.",
+     "excerpt": "Invoice #1047",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f4",
+     "documentId": "demo-invoice",
+     "category": "date",
+     "subject": "invoice_date",
+     "value": {
+      "type": "date",
+      "iso": "2026-03-12"
+     },
+     "eventDate": "2026-03-12",
+     "originalWording": "The invoice is dated March 12, 2026.",
+     "excerpt": "Invoice date: March 12, 2026",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f5",
+     "documentId": "demo-invoice",
+     "category": "party",
+     "subject": "customer_name",
+     "value": {
+      "type": "text",
+      "text": "Jordan Avila"
+     },
+     "originalWording": "The invoice is billed to Jordan Avila.",
+     "excerpt": "Bill to: Jordan Avila",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f6",
+     "documentId": "demo-invoice",
+     "category": "other",
+     "subject": "scope_of_work",
+     "value": {
+      "type": "text",
+      "text": "Back deck replacement and stain"
+     },
+     "originalWording": "The job is back deck replacement and stain.",
+     "excerpt": "Job: Back deck replacement and stain",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f7",
+     "documentId": "demo-invoice",
+     "category": "amount",
+     "subject": "deck_boards_railing_charge",
+     "value": {
+      "type": "amount",
+      "cents": 165000
+     },
+     "originalWording": "Deck boards and railing replacement is charged at $1,650.00.",
+     "excerpt": "Deck boards and railing replacement: $1,650.00",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f8",
+     "documentId": "demo-invoice",
+     "category": "amount",
+     "subject": "stain_two_coats_charge",
+     "value": {
+      "type": "amount",
+      "cents": 75000
+     },
+     "originalWording": "Weatherproof stain, two coats, is charged at $750.00.",
+     "excerpt": "Weatherproof stain, two coats: $750.00",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f9",
+     "documentId": "demo-invoice",
+     "category": "amount",
+     "subject": "third_coat_charge",
+     "value": {
+      "type": "amount",
+      "cents": 40000
+     },
+     "originalWording": "An additional third coat of stain is charged at $400.00.",
+     "excerpt": "Additional third coat of stain: $400.00",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f10",
+     "documentId": "demo-invoice",
+     "category": "amount",
+     "subject": "total_price",
+     "value": {
+      "type": "amount",
+      "cents": 280000
+     },
+     "originalWording": "The invoice total is $2,800.00.",
+     "excerpt": "Total: $2,800.00",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f11",
+     "documentId": "demo-invoice",
+     "category": "payment",
+     "subject": "deposit_paid",
+     "value": {
+      "type": "amount",
+      "cents": 60000
+     },
+     "originalWording": "A deposit of $600.00 was received and deducted.",
+     "excerpt": "Less deposit received: $600.00",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f12",
+     "documentId": "demo-invoice",
+     "category": "amount",
+     "subject": "balance_owed",
+     "value": {
+      "type": "amount",
+      "cents": 220000
+     },
+     "originalWording": "The balance due is $2,200.00.",
+     "excerpt": "Balance due: $2,200.00",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f13",
+     "documentId": "demo-invoice",
+     "category": "date",
+     "subject": "due_date",
+     "value": {
+      "type": "date",
+      "iso": "2026-03-19"
+     },
+     "eventDate": "2026-03-19",
+     "originalWording": "Payment is due by March 19, 2026.",
+     "excerpt": "Payment due by: March 19, 2026",
+     "page": 1
+    },
+    {
+     "id": "demo-invoice-f14",
+     "documentId": "demo-invoice",
+     "category": "other",
+     "subject": "document_disclaimer",
+     "value": {
+      "type": "text",
+      "text": "Fictional document for demonstration only"
+     },
+     "originalWording": "The document states it is fictional and for demonstration only.",
+     "excerpt": "FICTIONAL DOCUMENT FOR DEMONSTRATION ONLY",
+     "page": 1
+    }
+   ],
+   "droppedCount": 0
+  },
+  "demo-texts": {
+   "status": "done",
+   "facts": [
+    {
+     "id": "demo-texts-f1",
+     "documentId": "demo-texts",
+     "category": "party",
+     "subject": "customer_name",
+     "value": {
+      "type": "text",
+      "text": "Jordan Avila"
+     },
+     "originalWording": "The text messages are between Jordan Avila and Dale Prescott.",
+     "excerpt": "Text messages between Jordan Avila and Dale Prescott (Ridgeline Home Repair)",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f2",
+     "documentId": "demo-texts",
+     "category": "party",
+     "subject": "contractor_name",
+     "value": {
+      "type": "text",
+      "text": "Dale Prescott (Ridgeline Home Repair)"
+     },
+     "originalWording": "Dale Prescott is with Ridgeline Home Repair.",
+     "excerpt": "Dale Prescott (Ridgeline Home Repair)",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f3",
+     "documentId": "demo-texts",
+     "category": "event",
+     "subject": "completion_date",
+     "value": {
+      "type": "date",
+      "iso": "2026-03-12"
+     },
+     "eventDate": "2026-03-12",
+     "originalWording": "Dale said the deck was done and he would send the invoice that night.",
+     "excerpt": "Mar 12, 2026, 4:05 PM - Dale: Deck is done. Sending the invoice tonight.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f4",
+     "documentId": "demo-texts",
+     "category": "amount",
+     "subject": "invoice_amount",
+     "value": {
+      "type": "amount",
+      "cents": 280000
+     },
+     "originalWording": "Jordan said the invoice says $2,800.",
+     "excerpt": "The invoice says $2,800 but our contract says $2,400.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f5",
+     "documentId": "demo-texts",
+     "category": "amount",
+     "subject": "total_price",
+     "value": {
+      "type": "amount",
+      "cents": 240000
+     },
+     "originalWording": "Jordan said the contract says $2,400.",
+     "excerpt": "The invoice says $2,800 but our contract says $2,400.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f6",
+     "documentId": "demo-texts",
+     "category": "amount",
+     "subject": "disputed_extra_charge",
+     "value": {
+      "type": "amount",
+      "cents": 40000
+     },
+     "originalWording": "Jordan asked what the extra $400 was for.",
+     "excerpt": "What's the extra $400?",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f7",
+     "documentId": "demo-texts",
+     "category": "other",
+     "subject": "extra_charge_reason",
+     "value": {
+      "type": "text",
+      "text": "Third coat of stain"
+     },
+     "eventDate": "2026-03-13",
+     "originalWording": "Dale said the extra charge was for a third coat of stain.",
+     "excerpt": "Mar 13, 2026, 8:15 AM - Dale: Third coat of stain. Wood was thirsty, had to do it.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f8",
+     "documentId": "demo-texts",
+     "category": "other",
+     "subject": "third_coat_dispute",
+     "value": {
+      "type": "text",
+      "text": "Never agreed to a third coat"
+     },
+     "originalWording": "Jordan said they never agreed to a third coat.",
+     "excerpt": "We never agreed to a third coat.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f9",
+     "documentId": "demo-texts",
+     "category": "other",
+     "subject": "contract_change_terms",
+     "value": {
+      "type": "text",
+      "text": "Changes have to be in writing"
+     },
+     "originalWording": "Jordan said the contract says changes have to be in writing.",
+     "excerpt": "The contract says changes have to be in writing.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f10",
+     "documentId": "demo-texts",
+     "category": "amount",
+     "subject": "balance_owed",
+     "value": {
+      "type": "amount",
+      "cents": 220000
+     },
+     "eventDate": "2026-03-16",
+     "originalWording": "Dale said the balance is $2,200 and threatened a lien if not paid that week.",
+     "excerpt": "Mar 16, 2026, 10:02 AM - Dale: Balance is $2,200. Pay it this week or I file a lien.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f11",
+     "documentId": "demo-texts",
+     "category": "payment",
+     "subject": "amount_paid",
+     "value": {
+      "type": "amount",
+      "cents": 220000
+     },
+     "eventDate": "2026-03-18",
+     "originalWording": "Jordan said they sent $2,200 by Zelle under protest.",
+     "excerpt": "Mar 18, 2026, 6:47 PM - Jordan: I sent the $2,200 by Zelle today under protest.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f12",
+     "documentId": "demo-texts",
+     "category": "other",
+     "subject": "refund_requested",
+     "value": {
+      "type": "amount",
+      "cents": 40000
+     },
+     "originalWording": "Jordan said they want the $400 back.",
+     "excerpt": "I want the $400 back.",
+     "page": 1
+    },
+    {
+     "id": "demo-texts-f13",
+     "documentId": "demo-texts",
+     "category": "event",
+     "subject": "refund_refused",
+     "value": {
+      "type": "text",
+      "text": "Not giving that back"
+     },
+     "eventDate": "2026-03-19",
+     "originalWording": "Dale said he is not giving the $400 back.",
+     "excerpt": "Mar 19, 2026, 7:30 AM - Dale: Not giving that back. We're done here.",
+     "page": 1
+    }
+   ],
+   "droppedCount": 0
+  },
+  "demo-contract": {
+   "status": "done",
+   "facts": [
+    {
+     "id": "demo-contract-f1",
+     "documentId": "demo-contract",
+     "category": "date",
+     "subject": "agreement_date",
+     "value": {
+      "type": "date",
+      "iso": "2026-02-02"
+     },
+     "eventDate": "2026-02-02",
+     "originalWording": "The agreement was made on February 2, 2026.",
+     "excerpt": "This agreement is made on February 2, 2026",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f2",
+     "documentId": "demo-contract",
+     "category": "party",
+     "subject": "contractor_name",
+     "value": {
+      "type": "text",
+      "text": "Ridgeline Home Repair"
+     },
+     "originalWording": "The contractor is Ridgeline Home Repair, represented by Dale Prescott.",
+     "excerpt": "Ridgeline Home Repair (\"Contractor\"), represented by Dale Prescott",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f3",
+     "documentId": "demo-contract",
+     "category": "party",
+     "subject": "customer_name",
+     "value": {
+      "type": "text",
+      "text": "Jordan Avila"
+     },
+     "originalWording": "The owner is Jordan Avila.",
+     "excerpt": "Jordan Avila (\"Owner\")",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f4",
+     "documentId": "demo-contract",
+     "category": "other",
+     "subject": "work_location",
+     "value": {
+      "type": "text",
+      "text": "Owner's residence in Sacramento, California"
+     },
+     "originalWording": "The work is at the Owner's residence in Sacramento, California.",
+     "excerpt": "for work at the Owner's residence in Sacramento, California",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f5",
+     "documentId": "demo-contract",
+     "category": "promise",
+     "subject": "scope_of_work",
+     "value": {
+      "type": "text",
+      "text": "Replace back deck boards and railing, and repaint deck with two coats of weatherproof stain"
+     },
+     "originalWording": "Contractor will replace the back deck boards and railing and repaint the deck with two coats of weatherproof stain.",
+     "excerpt": "Contractor will replace the back deck boards and railing, and repaint the deck with two coats of weatherproof stain.",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f6",
+     "documentId": "demo-contract",
+     "category": "amount",
+     "subject": "total_price",
+     "value": {
+      "type": "amount",
+      "cents": 240000
+     },
+     "originalWording": "The total contract price is $2,400.00, including labor and materials.",
+     "excerpt": "The total contract price is $2,400.00, including labor and materials.",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f7",
+     "documentId": "demo-contract",
+     "category": "promise",
+     "subject": "deposit_amount",
+     "value": {
+      "type": "amount",
+      "cents": 60000
+     },
+     "originalWording": "Owner will pay a deposit of $600.00 on signing.",
+     "excerpt": "Owner will pay a deposit of $600.00 on signing.",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f8",
+     "documentId": "demo-contract",
+     "category": "promise",
+     "subject": "balance_due_terms",
+     "value": {
+      "type": "text",
+      "text": "Balance due when work is complete"
+     },
+     "originalWording": "The balance is due when the work is complete.",
+     "excerpt": "The balance is due when the work is complete.",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f9",
+     "documentId": "demo-contract",
+     "category": "date",
+     "subject": "work_start_date",
+     "value": {
+      "type": "date",
+      "iso": "2026-02-16"
+     },
+     "eventDate": "2026-02-16",
+     "originalWording": "Work will begin on February 16, 2026.",
+     "excerpt": "Work will begin on February 16, 2026",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f10",
+     "documentId": "demo-contract",
+     "category": "date",
+     "subject": "completion_date",
+     "value": {
+      "type": "date",
+      "iso": "2026-03-06"
+     },
+     "eventDate": "2026-03-06",
+     "originalWording": "Work will be finished by March 6, 2026.",
+     "excerpt": "will be finished by March 6, 2026",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f11",
+     "documentId": "demo-contract",
+     "category": "promise",
+     "subject": "change_order_terms",
+     "value": {
+      "type": "text",
+      "text": "Changes must be agreed in writing by both parties"
+     },
+     "originalWording": "Any change to the work or price must be agreed in writing by both parties before it is made.",
+     "excerpt": "Any change to the work or the price must be agreed in writing by both parties before the change is made.",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f12",
+     "documentId": "demo-contract",
+     "category": "event",
+     "subject": "contractor_signature",
+     "value": {
+      "type": "text",
+      "text": "Signed by Dale Prescott, Ridgeline Home Repair"
+     },
+     "originalWording": "The agreement is signed by Dale Prescott for Ridgeline Home Repair.",
+     "excerpt": "Signed: Dale Prescott, Ridgeline Home Repair",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f13",
+     "documentId": "demo-contract",
+     "category": "event",
+     "subject": "owner_signature",
+     "value": {
+      "type": "text",
+      "text": "Signed by Jordan Avila"
+     },
+     "originalWording": "The agreement is signed by Jordan Avila.",
+     "excerpt": "Signed: Jordan Avila",
+     "page": 1
+    },
+    {
+     "id": "demo-contract-f14",
+     "documentId": "demo-contract",
+     "category": "other",
+     "subject": "document_notice",
+     "value": {
+      "type": "text",
+      "text": "Fictional document for demonstration only"
+     },
+     "originalWording": "The document states it is fictional and for demonstration only.",
+     "excerpt": "FICTIONAL DOCUMENT FOR DEMONSTRATION ONLY",
+     "page": 1
+    }
+   ],
+   "droppedCount": 0
+  }
+ },
+ "analysis": {
+  "statements": [
+   {
+    "id": "ans-amount",
+    "origin": "answer",
+    "text": "The other party owes me $400."
+   },
+   {
+    "id": "ans-overdue",
+    "origin": "answer",
+    "text": "The payment has been overdue for about 6 weeks."
+   },
+   {
+    "id": "ans-said-wont-pay",
+    "origin": "answer",
+    "text": "The other party has said they won't pay."
+   },
+   {
+    "id": "ans-knows-location",
+    "origin": "answer",
+    "text": "I don't know where the other party lives or does business."
+   },
+   {
+    "id": "desc-1i1ex2t",
+    "origin": "description",
+    "text": "I hired Ridgeline Home Repair to replace and stain my back deck for $2,400.",
+    "quote": "I hired Ridgeline Home Repair to replace and stain my back deck for $2,400"
+   },
+   {
+    "id": "desc-qt2g9f",
+    "origin": "description",
+    "text": "I paid a $500 deposit when I signed.",
+    "quote": "I paid a $500 deposit when I signed"
+   },
+   {
+    "id": "desc-1dvfzxd",
+    "origin": "description",
+    "text": "The work finished about a week late.",
+    "quote": "The work finished about a week late"
+   },
+   {
+    "id": "desc-huhh82",
+    "origin": "description",
+    "text": "Dale sent me an invoice for $2,800.",
+    "quote": "Dale sent an invoice for $2,800"
+   },
+   {
+    "id": "desc-hxc4qn",
+    "origin": "description",
+    "text": "The extra $400 was for a third coat of stain I never agreed to.",
+    "quote": "the extra $400 was for a third coat of stain I never agreed to"
+   },
+   {
+    "id": "desc-sfspli",
+    "origin": "description",
+    "text": "I paid the $2,200 balance under protest.",
+    "quote": "I paid the $2,200 balance under protest"
+   },
+   {
+    "id": "desc-1av7g6f",
+    "origin": "description",
+    "text": "Dale threatened to file a lien.",
+    "quote": "so he would stop threatening a lien"
+   },
+   {
+    "id": "desc-i3xq0x",
+    "origin": "description",
+    "text": "Ridgeline has since moved.",
+    "quote": "Ridgeline has since moved"
+   }
+  ],
+  "links": [
+   {
+    "statementId": "ans-amount",
+    "supports": [
+     "demo-texts-f12"
+    ],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "ans-overdue",
+    "supports": [],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "ans-said-wont-pay",
+    "supports": [
+     "demo-texts-f13"
+    ],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "ans-knows-location",
+    "supports": [],
+    "contradicts": [
+     "demo-invoice-f2"
+    ],
+    "note": "You wrote that you don't know where the other party lives or does business; the invoice lists 2150 Alder Creek Rd, Sacramento, CA 95826."
+   },
+   {
+    "statementId": "desc-1i1ex2t",
+    "supports": [
+     "demo-contract-f2",
+     "demo-contract-f5",
+     "demo-contract-f6",
+     "demo-texts-f5"
+    ],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "desc-qt2g9f",
+    "supports": [],
+    "contradicts": [
+     "demo-contract-f7",
+     "demo-invoice-f11",
+     "demo-receipt-f4"
+    ],
+    "note": "You wrote a $500 deposit; the contract, invoice, and receipt each show $600."
+   },
+   {
+    "statementId": "desc-1dvfzxd",
+    "supports": [
+     "demo-contract-f10",
+     "demo-texts-f3"
+    ],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "desc-huhh82",
+    "supports": [
+     "demo-invoice-f10",
+     "demo-texts-f4"
+    ],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "desc-hxc4qn",
+    "supports": [
+     "demo-invoice-f9",
+     "demo-texts-f7",
+     "demo-texts-f8"
+    ],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "desc-sfspli",
+    "supports": [
+     "demo-texts-f11",
+     "demo-invoice-f12",
+     "demo-texts-f10"
+    ],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "desc-1av7g6f",
+    "supports": [
+     "demo-texts-f10"
+    ],
+    "contradicts": [],
+    "note": ""
+   },
+   {
+    "statementId": "desc-i3xq0x",
+    "supports": [],
+    "contradicts": [],
+    "note": ""
+   }
+  ],
+  "conflicts": [
+   {
+    "factIds": [
+     "demo-contract-f6",
+     "demo-texts-f5",
+     "demo-invoice-f10"
+    ],
+    "subject": "Total price for the deck job",
+    "note": "The contract states a total of $2,400.00, while the invoice states a total of $2,800.00, including a $400.00 line for a third coat of stain."
+   }
+  ],
+  "nextSteps": [
+   {
+    "action": "Save the Zelle confirmation showing the $2,200 payment sent on March 18, 2026.",
+    "whyItMatters": "It is the record showing how much you actually paid on the balance and when.",
+    "topic": "evidence_prep"
+   },
+   {
+    "action": "Search your emails, texts, and papers for any written change order or message about a third coat before the work was done.",
+    "whyItMatters": "Whether any written approval of a third coat exists is central to how you lay out the $400 charge.",
+    "topic": "evidence_prep"
+   },
+   {
+    "action": "Export the full text thread with Dale, keeping dates and timestamps, from March 12 through March 19, 2026.",
+    "whyItMatters": "The thread holds the invoice dispute, the lien message, your under-protest payment, and the refusal in one dated sequence.",
+    "topic": "evidence_prep"
+   },
+   {
+    "action": "Write down the date you count the $400 as overdue from, such as the March 19, 2026 refusal.",
+    "whyItMatters": "Your 'about 6 weeks' figure is easier to explain when it is tied to a specific dated event.",
+    "topic": "evidence_prep"
+   },
+   {
+    "action": "Take or gather dated photos of the finished deck stain.",
+    "whyItMatters": "Photos help show the condition of the work the invoice charges for.",
+    "topic": "evidence_prep"
+   }
+  ],
+  "summary": "The contract, signed February 2, 2026, sets a $2,400 price for replacing the deck and applying two coats of stain, and says changes must be agreed in writing. The invoice dated March 12, 2026 totals $2,800, including a $400 line for a third coat, and the texts show you disputing it, paying $2,200 under protest on March 18, and Dale replying 'Not giving that back' on March 19. The contract, invoice, and receipt all show a $600 deposit, while your description says $500. The invoice lists a business address of 2150 Alder Creek Rd, Sacramento, although you say Ridgeline has moved and you don't know where it does business; the move rests only on your word. No document shows whether any approval of a third coat was given, and the six-week overdue period is not stated in any document.",
+  "droppedClaimCount": 0
+ }
+}

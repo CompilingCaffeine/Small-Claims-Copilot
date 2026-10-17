@@ -68,11 +68,11 @@ export function parseDate(text: string): string | null {
   return findDates(text)[0] ?? null;
 }
 
-export function formatIsoDate(isoDate: string): string {
+export function formatIsoDate(isoDate: string, month: "long" | "short" = "long"): string {
   const [y, m, d] = isoDate.split("-").map(Number);
   return new Date(Date.UTC(y!, m! - 1, d!)).toLocaleDateString("en-US", {
     year: "numeric",
-    month: "long",
+    month,
     day: "numeric",
     timeZone: "UTC",
   });

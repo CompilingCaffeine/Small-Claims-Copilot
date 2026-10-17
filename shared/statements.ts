@@ -21,6 +21,11 @@ export function answerStatements(input: CaseInput): UserStatement[] {
     out.push({ id: ANSWER_IDS.saidWontPay, origin: "answer", text: "The other party hasn't said they won't pay." });
   if (input.knowsLocation === "yes")
     out.push({ id: ANSWER_IDS.knowsLocation, origin: "answer", text: "I know where the other party lives or does business." });
+  // Not a claim to back, but a document that lists their address contradicts it: a key flag.
+  if (input.knowsLocation === "no")
+    out.push({ id: ANSWER_IDS.knowsLocation, origin: "answer", text: "I don't know where the other party lives or does business." });
+  if (input.knowsLocation === "not_sure")
+    out.push({ id: ANSWER_IDS.knowsLocation, origin: "answer", text: "I'm not sure where the other party lives or does business." });
   return out;
 }
 

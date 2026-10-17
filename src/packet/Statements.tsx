@@ -38,7 +38,7 @@ export function Statements({ packet, factsById, state }: { packet: Packet; facts
             )}
             {contradictingFactIds.length > 0 && (
               <div className="small" style={{ marginTop: 8 }}>
-                <StatusTag status="conflict" /> <span className="muted">a document says otherwise:</span>
+                <StatusTag status="mismatch" /> <span className="muted">a document says otherwise:</span>
                 {contradictingFactIds.map((id) => {
                   const fact = factsById.get(id)!;
                   return (
