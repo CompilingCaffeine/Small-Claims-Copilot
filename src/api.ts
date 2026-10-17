@@ -19,3 +19,17 @@ export function extractFacts(document: Pick<SourceDocument, "id" | "filename" | 
 export function analyzeCase(input: CaseInput, facts: Fact[]) {
   return post<Analysis>("/api/analyze", { input, facts });
 }
+
+export async function uploadDocument(file: File): Promise<Pick<SourceDocument, "filename" | "kind" | "pages">> {
+  const body = new FormData();
+  body.append("file", file, file.name);
+  let res: Response;
+  try {
+    res = await fetch("/api/documents", { method: "POST", body });
+  } catch {
+    throw new Error("Couldn't reach the server. Is `npm run dev` running?");
+  }
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error ?? `Upload failed (${res.status}).`);
+  return data;
+}

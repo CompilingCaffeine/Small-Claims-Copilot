@@ -140,6 +140,16 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 }
 .excerpt .src { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12px; }
 
+/* Upload */
+.dropzone {
+  display: grid; justify-items: center; gap: 10px; text-align: center; padding: 28px 16px; margin-bottom: 16px;
+  border: 1.5px dashed var(--border); border-radius: var(--radius-card); background: var(--bg);
+}
+.dropzone.over { border-color: var(--amber); background: var(--amber-wash); }
+.paste { margin-bottom: 8px; }
+.paste summary { cursor: pointer; font-weight: 500; font-size: 14px; padding: 6px 0; }
+.paste[open] summary { margin-bottom: 12px; }
+
 /* Lists */
 .doc-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .doc-name { font-family: var(--font-mono); font-size: 14px; }

@@ -49,7 +49,7 @@ Build mode: fast (chosen by learner; pauses at the slice 3 checkpoint and final 
   Learner check: Open Demo case → Add evidence → Generate packet. It should finish instantly. Read Key flags and Next steps, then open Packet details. Edit the demo description and generate again to see it call the API live (optional, ≈ $0.15–0.60).
   Commit: `Lead the packet with key flags and next steps; replay saved demo results`
 
-- [ ] **5. Upload real .txt and .pdf files, with clear failures**
+- [x] **5. Upload real .txt and .pdf files, with clear failures**
   Becomes usable: Drag in or pick `.txt`/`.pdf` files (up to 10, 2 MB each). Each shows its filename and status (reading / ready / failed) with Remove and Retry. Wrong types, oversized files, an 11th document, and scanned PDFs get clear messages, and one failed document doesn't stop the packet. `demo-files/` holds the demo documents as real files, including the invoice as a PDF.
   Why now: Paste already proves the kernel, so file handling is the next real behavior. It brings its own risks (PDF text extraction, limits) that should be settled before the packet is finished. The prompt-injection test belongs here too because uploaded files are the main way untrusted text gets in.
   PRD ref: `prd.md > Add evidence`, `prd.md > Generate packet` (document instructions treated as content), `prd.md > States and Boundaries` (Extraction failed for one document)
@@ -111,3 +111,7 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - The demo's localStorage key is now versioned (`scc:case:demo:v2`): a browser holding the old demo would never match the recording's fingerprint and would quietly call the API.
 - Recorded demo run: 4 extractions (50 facts, 0 dropped) + 1 analysis, ≈ 13k input / 8.6k output tokens.
 - `devpost/scope.html`, `prd.html`, `spec.html` were not regenerated for these edits; the `.md` files are the source of truth.
+- Demo files come from `npm run demo-files`, which writes them straight from `DEMO_DOCUMENTS`; the invoice PDF is made by a ~40-line writer in `scripts/pdf.ts` rather than a PDF library, and a test checks every file still matches the Demo case. The PDF is `demo-files/invoice-1047.pdf` (the demo's filename), not `invoice.pdf`.
+- A rejected or failed upload never becomes a saved document: it shows as "✕ not added" with the reason, Dismiss, and Retry (Retry only when the file passes the type/size checks). "Failed" with Retry/Remove still applies to documents whose extraction fails.
+- Paste moved under a collapsed "Or paste a document's text" so the drop zone leads; Generate waits while files are uploading.
+- `npm run test:live` loads `.env` itself and skips when there's no key; measured ≈ 22 s per run.
