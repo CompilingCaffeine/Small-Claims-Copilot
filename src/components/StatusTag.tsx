@@ -1,4 +1,4 @@
-export type Status = "backed" | "your_word_only" | "mismatch" | "differs" | "ai" | "ai_suggestion";
+export type Status = "backed" | "your_word_only" | "mismatch" | "differs" | "ai";
 
 const TAGS: Record<Status, { className: string; text: string }> = {
   backed: { className: "tag ok", text: "✓ backed by" },
@@ -6,7 +6,6 @@ const TAGS: Record<Status, { className: string; text: string }> = {
   mismatch: { className: "tag bad", text: "✕ doesn't match" },
   differs: { className: "tag neutral", text: "≠ documents differ" },
   ai: { className: "tag neutral", text: "AI interpretation" },
-  ai_suggestion: { className: "tag neutral", text: "AI suggestion" },
 };
 
 /** Always icon + words, never color alone, so status survives print and color blindness. */

@@ -15,7 +15,7 @@ Source: `scope.md > The Core Loop`, `scope.md > What "Working" Looks Like`.
 2. **Step 1 · Describe.** They write a short description of the dispute and answer clarifying questions: how much they're owed, how long it's been overdue, whether the other party has said they won't pay, and whether they know where the other party lives or does business. Anything can be left as "not sure."
 3. **Step 2 · Add evidence.** They upload or paste a few documents (contract, invoice, text thread). Each shows its filename and extraction status, and can be removed. The step prompts for documents that would back what they said in Step 1 ("You said he owes $2,800. Do you have an invoice that shows it?").
 4. They click **Generate packet**.
-5. **Step 3 · Review packet.** The packet opens with **Key flags**: places where what they said doesn't match their documents (e.g. "You said you don't know where they do business, but your invoice lists an address"). Then **Next steps**: a short ordered list of actions, each with why it matters. Everything else (statements marked ✓ backed by / ⚠ your word only, the timeline, the evidence list, differences between documents, the summary) is in collapsed **Packet details**.
+5. **Step 3 · Review packet.** The packet opens with **Key flags**: places where what they said doesn't match their documents (e.g. "You said you don't know where they do business, but your invoice lists an address"). Then **Next steps**: a short ordered list of actions, each with why it matters. The case summary sits above the flags; everything else (statements marked ✓ backed by / ⚠ your word only, the evidence list, differences between documents, the timeline) is in collapsed **Packet details**.
 6. They act on a next step, or go back and add a missing document, then regenerate. "Your word only" items become "backed by" once a document supports them.
 7. They edit wording where needed and print the packet.
 
@@ -26,7 +26,7 @@ Source: `scope.md > The Core Loop`, `scope.md > What "Working" Looks Like`.
 - **Step indicator:** Describe → Add evidence → Review packet. Separate steps; the user can move back to earlier steps.
 - **Step 1 · Describe:** a description box plus the clarifying questions as short fields.
 - **Step 2 · Add evidence:** upload/paste area, a list of documents with status and remove buttons, a "what would back your claims" prompt list, a note that documents are sent to an AI service for extraction, and the **Generate packet** button.
-- **Step 3 · Review packet:** Key flags → Next steps → collapsed Packet details (Statements, Timeline, Evidence list, Differences between documents, Case summary). Print button; print expands the details.
+- **Step 3 · Review packet:** Case summary → Key flags → Next steps → collapsed Packet details (Statements, Evidence list, Differences between documents, Timeline). Print button; print expands the details.
 
 ## Look and Feel
 Source: `scope.md > Inspiration & Identity`.

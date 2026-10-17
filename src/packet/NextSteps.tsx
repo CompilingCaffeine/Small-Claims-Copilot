@@ -1,7 +1,6 @@
 import { EDIT_KEYS } from "../../shared/edits.ts";
 import { formatIsoDate } from "../../shared/normalize.ts";
 import type { Packet } from "../../shared/schemas.ts";
-import { StatusTag } from "../components/StatusTag.tsx";
 import type { SetEdit } from "../steps/ReviewStep.tsx";
 import { Editable } from "./Editable.tsx";
 
@@ -14,10 +13,7 @@ export function NextSteps({ packet, setEdit }: { packet: Packet; setEdit: SetEdi
       <ol className="steps">
         {packet.nextSteps.map((s) => (
           <li key={s.id} className="card">
-            <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-              <strong style={{ flex: 1, minWidth: 240, fontWeight: 500 }}>{s.action}</strong>
-              {s.origin === "ai" && <StatusTag status="ai_suggestion" />}
-            </div>
+            <strong style={{ fontWeight: 500 }}>{s.action}</strong>
             <p className="why">
               {s.whyItMatters}
               {s.link && (

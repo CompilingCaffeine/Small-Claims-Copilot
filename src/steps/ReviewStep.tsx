@@ -37,7 +37,7 @@ export function ReviewStep({ state, update }: { state: CaseState; update: Update
 
   const backed = packet.statements.filter((s) => s.status === "backed").length;
   const diffs = packet.documentDifferences.length;
-  const detailsSummary = `${backed} of ${packet.statements.length} statements backed · timeline · evidence list · ${diffs} difference${diffs === 1 ? "" : "s"} between documents · summary`;
+  const detailsSummary = `${backed} of ${packet.statements.length} statements backed · evidence list · ${diffs} difference${diffs === 1 ? "" : "s"} between documents · timeline`;
 
   return (
     <div>
@@ -65,14 +65,14 @@ export function ReviewStep({ state, update }: { state: CaseState; update: Update
           says so yet.
         </p>
       </header>
+      <Summary packet={packet} setEdit={setEdit} />
       <KeyFlags packet={packet} factsById={factsById} documents={state.documents} />
       <NextSteps packet={packet} setEdit={setEdit} />
       <Details summary={detailsSummary}>
         <Statements packet={packet} factsById={factsById} state={state} setEdit={setEdit} />
-        <Timeline packet={packet} factsById={factsById} documents={state.documents} />
         <EvidenceList packet={packet} />
         <Differences packet={packet} factsById={factsById} documents={state.documents} />
-        <Summary packet={packet} setEdit={setEdit} />
+        <Timeline packet={packet} factsById={factsById} documents={state.documents} />
       </Details>
     </div>
   );

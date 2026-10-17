@@ -122,7 +122,7 @@ PRD ref: `prd.md > Generate packet`, `prd.md > Review packet`.
 PRD ref: `prd.md > Review packet`.
 
 ### Review step
-`src/steps/ReviewStep.tsx` + `src/packet/*`. Order: KeyFlags → NextSteps → collapsed Packet details (Statements → Timeline → EvidenceList → Differences between documents → Summary), expanded in print. `SourceExcerpt` shows filename + page + excerpt (Geist Mono) on click. Print button.
+`src/steps/ReviewStep.tsx` + `src/packet/*`. Order: Summary → KeyFlags → NextSteps → collapsed Packet details (Statements → EvidenceList → Differences between documents → Timeline), expanded in print. `SourceExcerpt` shows filename + page + excerpt (Geist Mono) on click. Print button.
 PRD ref: `prd.md > Review packet`, `prd.md > Print`.
 
 ### Editing

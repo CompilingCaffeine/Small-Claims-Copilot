@@ -189,7 +189,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   .card, .event { break-inside: avoid; }
   .tag { border: 1px solid currentColor; }
   .excerpt[hidden], .details-body[hidden] { display: block !important; }
-  .official::after { content: " (" attr(href) ")"; color: var(--muted); white-space: normal; }
 }
 
 /* Dialog */

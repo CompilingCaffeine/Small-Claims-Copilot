@@ -6,7 +6,8 @@ A free tool that turns the scattered documents behind a California small claims 
 - **⚠ your word only**: no document says so yet.
 - **Key flags**: places where your own documents disagree with what you said. For example, you say you don't know where the other party does business, but your invoice lists their address. Code confirms the mismatch where it can (the quote really contains an address, or the amounts really differ); anything else is labeled *AI interpretation*.
 - **Next steps**: what to do next, each with why it matters, plus a short link to the official California Courts self-help page where relevant.
-- **Packet details**: your statements, a timeline (dates only when a document states them), an evidence list, differences between documents, and an editable summary. Print gives a clean packet.
+- **Case summary** at the top, editable.
+- **Packet details**: your statements, an evidence list, differences between documents, and a timeline (dates only when a document states them). Print gives a clean packet.
 
 > **Not legal advice.** This app organizes your documents and gives general information. It doesn't give legal advice, predict outcomes, or decide who's right.
 
@@ -57,5 +58,5 @@ To try uploads, open **My case** and drop in the files from `demo-files/` (three
 - Proof of concept: one fictional demo case; California small claims only.
 - `.txt` and `.pdf` only, up to 10 documents of 2 MB each. Scanned PDFs (images of pages) can't be read; paste their text instead.
 - "Backed by" means a document says so, not that it's true.
-- AI suggestions and summaries can be wrong; they're labeled, and you can edit the wording.
+- AI-written next steps and the summary can be wrong. The summary is labeled *AI interpretation*, and you can edit its wording or add notes to steps.
 - Costs: a typical 4-document case costs roughly $0.60 in API usage per full generate (documents already read are reused).

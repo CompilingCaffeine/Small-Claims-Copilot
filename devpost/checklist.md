@@ -76,6 +76,9 @@ Build mode: fast (chosen by learner; pauses at the slice 3 checkpoint and final 
 
 ## Final Review
 
+- [ ] Print doesn't repeat the official page's URL after "Additional info" (the link already carries it)
+- [ ] No "AI suggestion" tags on next steps
+- [ ] Case summary at the top of the packet (under the notice); timeline at the bottom of Packet details
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
@@ -119,3 +122,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Edits are applied inside `assemblePacket()` (`shared/edits.ts`), so every view and the print use the edited wording; an edited statement keeps its status and shows "edited" with Undo. Next steps carry the user's own note instead of separate "follow-up answer" fields, since follow-up questions became next steps.
 - The packet carries `amountClaimedCents` (null → "unknown") for the printed header, which is where "unknown amounts shown as unknown" became visible.
 - Print uses light-theme tokens even when the screen is in dark mode, hides the excerpt toggles (the full excerpt prints instead), and writes out each "Additional info" link's URL.
+- Final review (learner): print no longer writes out the official URL after "Additional info"; AI next steps carry no tag (the summary keeps its *AI interpretation* label, and rule-based steps aren't distinguished from AI ones on screen); the case summary moved to the top of the packet and the timeline to the bottom of Packet details.
