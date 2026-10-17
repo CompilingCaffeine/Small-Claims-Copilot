@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Small Claims Copilot Scope</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --surface: #ffffff; --ink: #1d2330; --muted: #5d6575; --line: #dcdad2;
+    --accent: #2f5d8a; --ok: #2e7d4f; --ok-bg: #e5f3ea; --warn: #a2620b; --warn-bg: #fbf0dc;
+    --bad: #b03a2e; --bad-bg: #f9e3e0; --chip: #eceae3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171d; --surface: #1c2029; --ink: #e7e9ee; --muted: #9aa2b1; --line: #2f3542;
+      --accent: #7fb0e0; --ok: #6fcf97; --ok-bg: #1d3327; --warn: #f0b860; --warn-bg: #382b15;
+      --bad: #f08a7e; --bad-bg: #3a1f1c; --chip: #262b36;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171d; --surface: #1c2029; --ink: #e7e9ee; --muted: #9aa2b1; --line: #2f3542;
+    --accent: #7fb0e0; --ok: #6fcf97; --ok-bg: #1d3327; --warn: #f0b860; --warn-bg: #382b15;
+    --bad: #f08a7e; --bad-bg: #3a1f1c; --chip: #262b36;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 40px 16px 64px; }
+  .eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 34px; margin: 4px 0 8px; line-height: 1.15; }
+  h2 { font-size: 20px; margin: 0 0 10px; }
+  .lede { font-size: 18px; color: var(--muted); margin: 0 0 28px; }
+  .status { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 99px;
+    background: var(--warn-bg); color: var(--warn); font-weight: 600; margin-left: 8px; vertical-align: middle; }
+  section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 24px; margin: 0 0 18px; }
+  .kernel { border-left: 5px solid var(--accent); }
+  .kernel p.big { font-size: 22px; font-weight: 650; margin: 0 0 8px; }
+  blockquote { margin: 0; padding: 10px 16px; border-left: 3px solid var(--line); color: var(--muted); font-style: italic; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font: 13px ui-sans-serif, -apple-system, sans-serif; }
+  svg .sub { fill: var(--muted); font-size: 11px; }
+  svg .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+  svg .hl { stroke: var(--accent); stroke-width: 2; }
+  svg .arrow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#ah); }
+  svg .loop { stroke: var(--accent); stroke-dasharray: 5 4; }
+  /* Packet mock */
+  .packet { display: grid; gap: 8px; margin-top: 12px; }
+  .row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--chip); }
+  .row .tag { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .tag.ok { background: var(--ok-bg); color: var(--ok); }
+  .tag.warn { background: var(--warn-bg); color: var(--warn); }
+  .tag.bad { background: var(--bad-bg); color: var(--bad); }
+  .row details summary { cursor: pointer; }
+  .row details p { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+  .note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  /* Boundary tabs */
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tabs button { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 99px; border: 1px solid var(--line);
+    background: transparent; color: var(--ink); cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .panel ul { margin: 0; padding-left: 20px; }
+  .panel li { margin: 6px 0; }
+  .panel li b { font-weight: 650; }
+  .panel[hidden] { display: none; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } h1 { font-size: 28px; } section { padding: 18px 16px; } }
+  .grid2 section { margin: 0; }
+  .wrap { margin-bottom: 18px; }
+  footer { font-size: 13px; color: var(--muted); text-align: center; margin-top: 24px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Devpost Learn · Scope <span class="status">approved</span></div>
+  <h1>Small Claims Copilot</h1>
+  <p class="lede">A free tool that turns a California small claims dispute's scattered documents into a hearing-ready evidence packet that keeps what you claim separate from what your documents prove.</p>
+
+  <section class="kernel">
+    <div class="eyebrow">The unique kernel</div>
+    <p class="big">Separating claims from proof.</p>
+    <p style="margin:0">Every statement is marked <b>backed by a document</b> (excerpt one click away) or <b>your word only</b>. When sources disagree, the conflict is flagged, not smoothed over. This is the prep work the lawyer never did.</p>
+  </section>
+
+  <section>
+    <h2>The core loop</h2>
+    <svg viewBox="0 0 800 210" role="img" aria-label="Core loop: describe the dispute, add documents, generate packet, review backed vs. unsupported vs. conflicts, then answer questions or add a document and regenerate.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor" style="fill:var(--muted)"/></marker></defs>
+      <rect class="box" x="10" y="40" width="160" height="70" rx="12"/>
+      <text x="90" y="70" text-anchor="middle">1 · Describe</text>
+      <text class="sub" x="90" y="90" text-anchor="middle">2 sentences + a few answers</text>
+      <rect class="box" x="215" y="40" width="160" height="70" rx="12"/>
+      <text x="295" y="70" text-anchor="middle">2 · Add evidence</text>
+      <text class="sub" x="295" y="90" text-anchor="middle">contract, invoice, texts</text>
+      <rect class="box" x="420" y="40" width="160" height="70" rx="12"/>
+      <text x="500" y="70" text-anchor="middle">3 · Generate packet</text>
+      <text class="sub" x="500" y="90" text-anchor="middle">AI extracts · code checks</text>
+      <rect class="box hl" x="625" y="40" width="165" height="70" rx="12"/>
+      <text x="707" y="70" text-anchor="middle">4 · Review</text>
+      <text class="sub" x="707" y="90" text-anchor="middle">✓ backed · ⚠ your word · ✕ conflict</text>
+      <path class="arrow" d="M172,75 L211,75"/>
+      <path class="arrow" d="M377,75 L416,75"/>
+      <path class="arrow" d="M582,75 L621,75"/>
+      <path class="arrow loop" d="M707,112 C707,180 295,180 295,114"/>
+      <text class="sub" x="500" y="198" text-anchor="middle">answer a follow-up question or add a missing document → regenerate; watch "your word only" turn into "backed by"</text>
+    </svg>
+  </section>
+
+  <section>
+    <h2>What "working" looks like</h2>
+    <p style="margin-top:0">Open the app, describe the fictional contractor dispute, drop in 3–4 synthetic documents, click once. The packet looks like this:</p>
+    <div class="packet">
+      <div class="row"><span class="tag ok">✓ backed by</span>
+        <details><summary>Contractor agreed to finish the deck by March 15.</summary><p>contract.txt: "Work to be completed no later than March 15, 2026."</p></details></div>
+      <div class="row"><span class="tag warn">⚠ your word only</span>
+        <details><summary>Contractor said on the phone he'd fix the railing for free.</summary><p>No document supports this yet. Follow-up: do you have a text or email that mentions it?</p></details></div>
+      <div class="row"><span class="tag bad">✕ conflict</span>
+        <details open><summary><b>Total price: contract says $2,400, invoice says $2,800.</b></summary><p>contract.txt: "Total price: $2,400" · invoice.txt: "Amount due: $2,800". Both shown; neither silently chosen.</p></details></div>
+    </div>
+    <p class="note">The conflict flag is the wow moment. Example content is illustrative; the real demo uses synthetic documents written during the build.</p>
+  </section>
+
+  <section>
+    <h2>Follow-up questions</h2>
+    <p style="margin:0">Each question says <b>why it matters</b> for organizing the case (e.g. "the amount you claim depends on which figure is right"), never a prediction. Where California procedure is relevant, it links to a <b>hand-picked official California Courts page with a last-checked date</b>. The AI never writes legal citations.</p>
+  </section>
+
+  <div class="grid2 wrap">
+    <section>
+      <h2>Who it's for</h2>
+      <p style="margin:0">A tech-savvy California resident with a small claims dispute, like a homeowner owed money by a contractor, whose evidence is scattered across email and their phone. Today they organize by hand, pay someone who may skip the prework, or give up.</p>
+    </section>
+    <section>
+      <h2>Feel</h2>
+      <p style="margin:0">Calm, trustworthy, organized: the opposite of court-paperwork overwhelm. Clearly an organizer, not a lawyer, with a visible not-legal-advice notice.</p>
+    </section>
+  </div>
+
+  <section>
+    <h2>Why this matters</h2>
+    <blockquote>"I've had to go to small claims court twice and it sucked, was super hard, and I ended giving up out of frustration."</blockquote>
+    <p style="margin-bottom:0">Gave up at serving the other party once; another time a hired lawyer "did zero prework" before contesting a red-light camera citation, and the fine went up.</p>
+  </section>
+
+  <section>
+    <h2>The boundary</h2>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-p="now">Now (PoC)</button>
+      <button role="tab" aria-selected="false" data-p="later">Later</button>
+      <button role="tab" aria-selected="false" data-p="cut">Cut</button>
+    </div>
+    <div class="panel" id="now"><ul>
+      <li>One fictional contractor payment dispute, synthetic documents, <b>one-click reset</b> to it</li>
+      <li>Dispute description + a few structured answers</li>
+      <li>Add/remove a handful of text documents (PDF if cheap)</li>
+      <li>AI extracts facts with excerpts; <b>app code</b> validates, sorts the timeline, detects date/amount conflicts</li>
+      <li>Packet: summary, timeline, evidence list, backed vs. your-word-only, conflicts, follow-ups; editable and printable</li>
+      <li>Clear-case button, not-legal-advice notice, documents treated as untrusted data</li>
+    </ul></div>
+    <div class="panel" id="later" hidden><ul>
+      <li><b>Serving the other party</b>: a service plan/checklist linked to official sources (your own sticking point)</li>
+      <li><b>Other low-stakes California disputes</b>, e.g. traffic citation contests</li>
+      <li>More automation of the process overall</li>
+    </ul></div>
+    <div class="panel" id="cut" hidden><ul>
+      <li><b>Filing, arranging service, contacting the other party</b>: real-world legal actions, far beyond 2–4 hours, risky to automate</li>
+      <li><b>Legal advice, outcome predictions, deciding who's right</b>: it's an organizer; pretending otherwise could hurt users</li>
+      <li><b>AI-generated legal citations</b>: unverifiable and easy to hallucinate</li>
+      <li><b>Accounts, database, deployment</b>: not needed to prove the kernel</li>
+    </ul></div>
+  </section>
+
+  <footer>Companion to <code>devpost/scope.md</code>, which is the canonical version.</footer>
+</main>
+<script>
+  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== b.dataset.p);
+  }));
+</script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Small Claims Copilot PRD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3eee2; --surface: #fffdf6; --surface-alt: #ebe3d2; --ink: #1c1b18; --muted: #635f52;
+    --border: #c9c0ac; --amber: #e8b02f; --amber-ink: #775b18; --amber-wash: #fbf0d3;
+    --ok: #2f6b45; --ok-wash: #e2efe3; --bad: #9c3a2c; --bad-wash: #f6e1db;
+    --sans: Geist, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161814; --surface: #1f221c; --surface-alt: #282c24; --ink: #ece5d4; --muted: #9a9585;
+      --border: #333830; --amber: #f0c559; --amber-ink: #f0c559; --amber-wash: #332d18;
+      --ok: #8fd0a2; --ok-wash: #1d2e22; --bad: #f09a8a; --bad-wash: #3a211c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161814; --surface: #1f221c; --surface-alt: #282c24; --ink: #ece5d4; --muted: #9a9585;
+    --border: #333830; --amber: #f0c559; --amber-ink: #f0c559; --amber-wash: #332d18;
+    --ok: #8fd0a2; --ok-wash: #1d2e22; --bad: #f09a8a; --bad-wash: #3a211c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--sans); }
+  main { max-width: 900px; margin: 0 auto; padding: 40px 16px 64px; }
+  .eyebrow { font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 34px; margin: 6px 0 8px; line-height: 1.15; font-weight: 700; }
+  h2 { font-size: 20px; margin: 0 0 12px; font-weight: 600; }
+  h3 { font-size: 16px; margin: 18px 0 6px; font-weight: 600; }
+  .lede { font-size: 18px; color: var(--muted); margin: 0 0 8px; }
+  .from { font: 13px var(--mono); color: var(--muted); margin: 0 0 28px; }
+  .pill { display: inline-block; font: 600 11px var(--mono); padding: 2px 9px; border-radius: 99px;
+    background: var(--amber-wash); color: var(--amber-ink); vertical-align: middle; margin-left: 6px; }
+  section { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px 24px; margin: 0 0 18px; }
+  code, .mono { font-family: var(--mono); font-size: .9em; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font: 13px var(--sans); }
+  svg .sub { fill: var(--muted); font: 11px var(--mono); }
+  svg .box { fill: var(--surface-alt); stroke: var(--border); stroke-width: 1.5; }
+  svg .hl { fill: var(--amber-wash); stroke: var(--amber); stroke-width: 2; }
+  svg .arrow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#ah); }
+  svg .loop { stroke: var(--amber); stroke-dasharray: 5 4; }
+  /* Step explorer */
+  .steps { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .steps button { font: 500 14px var(--sans); padding: 7px 14px; border-radius: 12px; border: 1px solid var(--border);
+    background: transparent; color: var(--ink); cursor: pointer; }
+  .steps button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .pane[hidden] { display: none; }
+  .pane .cols { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; }
+  @media (max-width: 680px) { .pane .cols { grid-template-columns: 1fr; } h1 { font-size: 28px; } section { padding: 18px 16px; } }
+  .mock { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; font-size: 14px; }
+  .mock .notice { font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; }
+  .mock .field { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; margin: 6px 0; }
+  .mock .field small { display: block; color: var(--muted); font-size: 12px; }
+  .mock .btn { display: inline-block; margin-top: 8px; background: var(--ink); color: var(--bg); padding: 6px 12px; border-radius: 10px; font-weight: 600; font-size: 13px; }
+  .item { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); margin: 6px 0; }
+  .tag { font: 600 11px var(--mono); padding: 2px 7px; border-radius: 6px; white-space: nowrap; }
+  .tag.ok { background: var(--ok-wash); color: var(--ok); }
+  .tag.warn { background: var(--amber-wash); color: var(--amber-ink); }
+  .tag.bad { background: var(--bad-wash); color: var(--bad); }
+  .excerpt { font: 12px var(--mono); color: var(--muted); margin-top: 4px; }
+  details { border-top: 1px solid var(--border); padding: 8px 0; }
+  details:first-of-type { border-top: 0; }
+  summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  ul.crit { list-style: none; padding: 0; margin: 6px 0 0; }
+  ul.crit li { padding-left: 24px; position: relative; margin: 6px 0; font-size: 14px; }
+  ul.crit li::before { content: "☐"; position: absolute; left: 2px; color: var(--muted); }
+  .states { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .state { background: var(--surface-alt); border-radius: 12px; padding: 12px 14px; font-size: 14px; }
+  .state b { display: block; margin-bottom: 4px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 680px) { .split { grid-template-columns: 1fr; } }
+  .split ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .split li { margin: 5px 0; }
+  .grew { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; font-size: 14px; }
+  .grew .was { color: var(--muted); font-style: italic; }
+  .grew .arrow { color: var(--amber); font-weight: 700; }
+  .grew > div { padding: 6px 0; border-bottom: 1px dashed var(--border); }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+  .sw { width: 64px; text-align: center; font: 10px var(--mono); color: var(--muted); }
+  .sw i { display: block; height: 36px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 4px; }
+  footer { font: 12px var(--mono); color: var(--muted); text-align: center; margin-top: 24px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Devpost Learn · PRD <span class="pill" id="status">approved</span></div>
+  <h1>Small Claims Copilot</h1>
+  <p class="lede">A free web app that turns a California small claims dispute's scattered documents into a hearing-ready packet that separates what you claim from what your documents prove, and shows what's wrong first.</p>
+  <p class="from">builds on scope.md › The Unique Kernel · The Core Loop · What "Working" Looks Like</p>
+
+  <section>
+    <h2>The core journey</h2>
+    <svg viewBox="0 0 820 230" role="img" aria-label="Journey: open app with notice and tabs; Describe with clarifying questions; Add evidence with backing prompts; Generate; Review packet with problems first; loop back to answer or add a document; then print.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+      <rect class="box" x="8" y="50" width="130" height="74" rx="14"/>
+      <text x="73" y="80" text-anchor="middle">Open</text>
+      <text class="sub" x="73" y="100" text-anchor="middle">notice · tabs</text>
+      <rect class="box" x="168" y="50" width="140" height="74" rx="14"/>
+      <text x="238" y="80" text-anchor="middle">1 · Describe</text>
+      <text class="sub" x="238" y="100" text-anchor="middle">clarifying Qs</text>
+      <rect class="box" x="338" y="50" width="140" height="74" rx="14"/>
+      <text x="408" y="80" text-anchor="middle">2 · Add evidence</text>
+      <text class="sub" x="408" y="100" text-anchor="middle">backing prompts</text>
+      <rect class="box hl" x="508" y="50" width="160" height="74" rx="14"/>
+      <text x="588" y="80" text-anchor="middle">3 · Review packet</text>
+      <text class="sub" x="588" y="100" text-anchor="middle">problems first</text>
+      <rect class="box" x="698" y="50" width="114" height="74" rx="14"/>
+      <text x="755" y="80" text-anchor="middle">Print</text>
+      <text class="sub" x="755" y="100" text-anchor="middle">clean packet</text>
+      <path class="arrow" d="M140,87 L164,87"/>
+      <path class="arrow" d="M310,87 L334,87"/>
+      <path class="arrow" d="M480,87 L504,87"/>
+      <path class="arrow" d="M670,87 L694,87"/>
+      <text class="sub" x="492" y="40" text-anchor="middle">generate</text>
+      <path class="arrow loop" d="M588,126 C588,200 408,200 408,128"/>
+      <text class="sub" x="498" y="218" text-anchor="middle">answer a follow-up or add a document → regenerate</text>
+    </svg>
+  </section>
+
+  <section>
+    <h2>Each step, up close</h2>
+    <div class="steps" role="tablist">
+      <button role="tab" aria-selected="true" data-p="p-shell">Header &amp; tabs</button>
+      <button role="tab" aria-selected="false" data-p="p-describe">1 · Describe</button>
+      <button role="tab" aria-selected="false" data-p="p-evidence">2 · Add evidence</button>
+      <button role="tab" aria-selected="false" data-p="p-review">3 · Review packet</button>
+      <button role="tab" aria-selected="false" data-p="p-edit">Edit · Print · Clear</button>
+    </div>
+
+    <div class="pane" id="p-shell"><div class="cols">
+      <div class="mock">
+        <div class="notice">Organizational help and general information, not legal advice. No outcome predictions.</div>
+        <b>Small Claims Copilot</b> &nbsp; <span class="tag warn">My case</span> <span class="mono" style="font-size:12px;color:var(--muted)">Demo case</span>
+        <div class="excerpt">Describe → Add evidence → Review packet · [Clear case]</div>
+      </div>
+      <div>
+        <details open><summary>Behavior</summary><p style="margin:6px 0;font-size:14px">The notice is pinned at the top of every step. <b>My case</b> and <b>Demo case</b> are separate tabs; the demo is a pre-filled fictional contractor dispute with a <b>Reset demo</b> action.</p></details>
+        <details><summary>Acceptance criteria</summary><ul class="crit">
+          <li>The notice is visible on every step.</li>
+          <li>Demo case loads pre-filled; generating produces a conflict at the top.</li>
+          <li>Reset demo restores the original demo.</li>
+          <li>Working in one tab doesn't change the other.</li>
+        </ul></details>
+      </div>
+    </div></div>
+
+    <div class="pane" id="p-describe" hidden><div class="cols">
+      <div class="mock">
+        <div class="field">The contractor never finished the deck and is billing me more than we agreed.<small>Description (required)</small></div>
+        <div class="field">$2,800<small>How much are you owed?</small></div>
+        <div class="field">About 3 months<small>How long has it been overdue?</small></div>
+        <div class="field">Not sure<small>Have they said they won't pay?</small></div>
+        <div class="field">No<small>Do you know where they live or do business?</small></div>
+      </div>
+      <div>
+        <details open><summary>Behavior</summary><p style="margin:6px 0;font-size:14px">Clarifying questions up front. Everything except the description can be "not sure." The app asks <i>whether</i> you know their location, never for the address; no SSNs or bank details.</p></details>
+        <details><summary>Acceptance criteria</summary><ul class="crit">
+          <li>Every field but the description can be blank/"not sure" and you can still continue.</li>
+          <li>Answers appear in the packet labeled <b>your statements</b>, not document facts.</li>
+        </ul></details>
+      </div>
+    </div></div>
+
+    <div class="pane" id="p-evidence" hidden><div class="cols">
+      <div class="mock">
+        <div class="item"><span class="tag ok">ready</span><span class="mono">contract.txt</span></div>
+        <div class="item"><span class="tag ok">ready</span><span class="mono">invoice.txt</span></div>
+        <div class="item"><span class="tag bad">failed</span><span class="mono">photo.heic</span> <small style="color:var(--muted)">unsupported type</small></div>
+        <div class="excerpt" style="margin:10px 0 4px">You said he owes $2,800. Do you have an invoice that shows it?</div>
+        <div class="excerpt">Document text is sent to an AI service to extract facts. Use fictional documents for the demo.</div>
+        <span class="btn">Generate packet</span>
+      </div>
+      <div>
+        <details open><summary>Behavior</summary><p style="margin:6px 0;font-size:14px">Upload or paste a few documents; each shows status and can be removed. Prompts ask for documents that would back what you said in Step 1. AI use is disclosed.</p></details>
+        <details><summary>Acceptance criteria</summary><ul class="crit">
+          <li>Uploaded docs appear with status; removed docs are gone from the packet.</li>
+          <li>Prompts reflect Step 1 answers.</li>
+          <li>Bad types and oversized files get a clear message; nothing crashes.</li>
+        </ul></details>
+      </div>
+    </div></div>
+
+    <div class="pane" id="p-review" hidden><div class="cols">
+      <div class="mock">
+        <div class="eyebrow" style="margin-bottom:4px">Needs attention</div>
+        <div class="item"><span class="tag bad">✕ conflict</span><div>Total price<div class="excerpt">contract.txt: "Total price: $2,400"<br>invoice.txt: "Amount due: $2,800"</div></div></div>
+        <div class="item"><span class="tag bad">gap</span><div>You don't know where the other party lives or does business.</div></div>
+        <div class="eyebrow" style="margin:10px 0 4px">Follow-up questions</div>
+        <div class="item"><div>Which price did you agree to?<div class="excerpt">Why it matters: the amount you claim depends on it.</div></div></div>
+        <div class="eyebrow" style="margin:10px 0 4px">Statements</div>
+        <div class="item"><span class="tag ok">✓ backed by</span><div>Deck due by March 15.<div class="excerpt">contract.txt: "completed no later than March 15"</div></div></div>
+        <div class="item"><span class="tag warn">⚠ your word only</span><div>He promised to fix the railing for free.</div></div>
+        <div class="excerpt" style="margin-top:8px">… Timeline · Evidence list · Case summary</div>
+      </div>
+      <div>
+        <details open><summary>Behavior</summary><p style="margin:6px 0;font-size:14px"><b>Problems first:</b> conflicts side by side (neither silently chosen) and must-resolve gaps. Then follow-ups with <i>why it matters</i> and, where relevant, a hand-picked official California Courts link with a last-checked date. Then backed / your-word-only statements, a dated timeline (undated events listed as "date unknown"), the evidence list, and a summary built only from labeled statements and backed facts.</p></details>
+        <details><summary>Acceptance criteria</summary><ul class="crit">
+          <li>Demo: $2,400 vs $2,800 conflict at the top with both excerpts.</li>
+          <li>Location "no/not sure" → gap + follow-up linking an official CA Courts page.</li>
+          <li>Clicking ✓ backed reveals document + excerpt that really appears in it.</li>
+          <li>Unsupported statements show ⚠ your word only, never as fact.</li>
+          <li>Missing dates/amounts show "unknown," never invented.</li>
+          <li>A document saying "ignore previous instructions…" is treated as content; nothing changes.</li>
+        </ul></details>
+      </div>
+    </div></div>
+
+    <div class="pane" id="p-edit" hidden><div class="cols">
+      <div class="mock">
+        <div class="item"><span class="tag warn">⚠ your word only</span><div>He promised to fix the railing for free. <span class="excerpt">[edit wording]</span><div class="excerpt">To back this, add a document. There's no "mark as backed" button.</div></div></div>
+        <span class="btn">Print packet</span> &nbsp; <span class="btn" style="background:transparent;color:var(--ink);border:1px solid var(--border)">Clear case</span>
+      </div>
+      <div>
+        <details open><summary>Behavior</summary><p style="margin:6px 0;font-size:14px">Edit the summary, statement wording, and follow-up answers. <b>✓ backed only ever comes from an excerpt.</b> Print gives a clean packet with statuses as text. Clear case wipes everything after a confirmation.</p></details>
+        <details><summary>Acceptance criteria</summary><ul class="crit">
+          <li>No control marks a statement backed without an excerpt.</li>
+          <li>Printed packet has no buttons/tabs; includes notice, excerpts, statuses.</li>
+          <li>Clear case removes description, answers, documents, packet.</li>
+        </ul></details>
+      </div>
+    </div></div>
+  </section>
+
+  <section>
+    <h2>States and edge cases</h2>
+    <div class="states">
+      <div class="state"><b>First use</b>My case empty, Step 1 open, hint toward the Demo case tab.</div>
+      <div class="state"><b>Nothing to generate</b>No description and no docs → Generate disabled, with a reason.</div>
+      <div class="state"><b>No documents</b>Packet still generates; everything is ⚠ your word only; follow-ups ask for evidence.</div>
+      <div class="state"><b>One doc fails</b>Marked failed with retry/remove; the rest still works.</div>
+      <div class="state"><b>AI output malformed</b>Friendly error, inputs kept, nothing unverified shown as backed.</div>
+      <div class="state"><b>Facts unknown</b>Packet still generates with "unknown" and matching follow-ups.</div>
+      <div class="state"><b>Come back later</b>Everything is still there until Clear case.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Look and feel</h2>
+    <p style="margin-top:0;font-size:14px"><b>Clean like a bank app</b>, using the palette and type from <a href="https://lazare.herzi.ai" style="color:var(--amber-ink)">lazare.herzi.ai</a> without its terminal theme. Geist for UI; <span class="mono">Geist Mono for excerpts</span>, so proof reads as quoted record. Rounded cards. Status always shown as icon + label, never color alone. No AI-app gradients, sparkles, or chat bubbles.</p>
+    <div class="swatches">
+      <div class="sw"><i style="background:#f3eee2"></i>paper</div>
+      <div class="sw"><i style="background:#fffdf6"></i>surface</div>
+      <div class="sw"><i style="background:#1c1b18"></i>ink</div>
+      <div class="sw"><i style="background:#635f52"></i>muted</div>
+      <div class="sw"><i style="background:#e8b02f"></i>amber</div>
+      <div class="sw"><i style="background:#161814"></i>dark bg</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How the scope grew into behavior</h2>
+    <div class="grew">
+      <div class="was">"a few structured answers"</div><div class="arrow">→</div><div>amount owed, how long overdue, said they won't pay?, know their location?</div>
+      <div class="was">"follow-up questions"</div><div class="arrow">→</div><div>questions at every step, each with why it matters + official CA Courts link</div>
+      <div class="was">"editable"</div><div class="arrow">→</div><div>edit wording, never promote a claim to ✓ backed</div>
+      <div class="was">"review the packet"</div><div class="arrow">→</div><div>problems first: conflicts and must-resolve gaps on top</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="split">
+      <div><h2>Building now</h2><ul>
+        <li>Notice, My case / Demo case tabs, reset demo</li>
+        <li>Describe questions (location yes/no/not sure)</li>
+        <li>Upload/paste/remove with backing prompts and AI disclosure</li>
+        <li>Extraction checked against real excerpts</li>
+        <li>Problems-first packet, follow-ups, official links</li>
+        <li>Editing that can't fake proof, print, clear, persistence</li>
+      </ul></div>
+      <div><h2>Deferred</h2><ul>
+        <li>Serving the other party; collecting their address</li>
+        <li>Other CA disputes (traffic contests)</li>
+        <li>Accounts / cross-device sync</li>
+        <li>Markdown/PDF file export <i>(assumption)</i></li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <ul style="margin:0;padding-left:18px;font-size:14px">
+      <li><b>PDF support</b>: decide in 4-spec based on cost.</li>
+      <li><b>Edits after regenerating</b> <i>(assumption)</i>: kept when the item still exists.</li>
+      <li><b>Export</b> <i>(assumption)</i>: browser print only for now.</li>
+      <li><b>Which official CA Courts pages</b>: gathered during build, with last-checked dates.</li>
+    </ul>
+  </section>
+
+  <footer>Companion to devpost/prd.md, which is the canonical version.</footer>
+</main>
+<script>
+  document.querySelectorAll('.steps button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.steps button').forEach(x => x.setAttribute('aria-selected', x === b));
+    document.querySelectorAll('.pane').forEach(p => p.hidden = p.id !== b.dataset.p);
+  }));
+</script>
+</body>
+</html>

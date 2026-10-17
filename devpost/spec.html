@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Small Claims Copilot Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3eee2; --surface: #fffdf6; --surface-alt: #ebe3d2; --ink: #1c1b18; --muted: #635f52;
+    --border: #c9c0ac; --amber: #e8b02f; --amber-ink: #775b18; --amber-wash: #fbf0d3;
+    --ok: #2f6b45; --ok-wash: #e2efe3; --bad: #9c3a2c; --bad-wash: #f6e1db;
+    --sans: Geist, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161814; --surface: #1f221c; --surface-alt: #282c24; --ink: #ece5d4; --muted: #9a9585;
+      --border: #333830; --amber: #f0c559; --amber-ink: #f0c559; --amber-wash: #332d18;
+      --ok: #8fd0a2; --ok-wash: #1d2e22; --bad: #f09a8a; --bad-wash: #3a211c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161814; --surface: #1f221c; --surface-alt: #282c24; --ink: #ece5d4; --muted: #9a9585;
+    --border: #333830; --amber: #f0c559; --amber-ink: #f0c559; --amber-wash: #332d18;
+    --ok: #8fd0a2; --ok-wash: #1d2e22; --bad: #f09a8a; --bad-wash: #3a211c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--sans); }
+  main { max-width: 920px; margin: 0 auto; padding: 40px 16px 64px; }
+  .eyebrow { font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 34px; margin: 6px 0 8px; line-height: 1.15; font-weight: 700; }
+  h2 { font-size: 20px; margin: 0 0 12px; font-weight: 600; }
+  .lede { font-size: 18px; color: var(--muted); margin: 0 0 28px; }
+  .pill { display: inline-block; font: 600 11px var(--mono); padding: 2px 9px; border-radius: 99px;
+    background: var(--amber-wash); color: var(--amber-ink); vertical-align: middle; margin-left: 6px; }
+  section { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px 24px; margin: 0 0 18px; }
+  @media (max-width: 680px) { section { padding: 18px 16px; } h1 { font-size: 28px; } }
+  code, .mono { font-family: var(--mono); font-size: .88em; }
+  p { margin: 0 0 10px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font: 13px var(--sans); }
+  svg .sub { fill: var(--muted); font: 11px var(--mono); }
+  svg .box { fill: var(--surface-alt); stroke: var(--border); stroke-width: 1.5; }
+  svg .hl { fill: var(--amber-wash); stroke: var(--amber); stroke-width: 2; }
+  svg .ref { fill: var(--ok-wash); stroke: var(--ok); stroke-width: 1.5; }
+  svg .line { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#ah); }
+  svg .dash { stroke-dasharray: 4 4; }
+  .plain p { font-size: 15px; }
+  .plain b { font-weight: 600; }
+  /* stepper */
+  .stepper { display: grid; grid-template-columns: 220px 1fr; gap: 18px; }
+  @media (max-width: 680px) { .stepper { grid-template-columns: 1fr; } }
+  .stepper ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .stepper li button { width: 100%; text-align: left; font: 14px var(--sans); padding: 8px 10px; border-radius: 10px;
+    border: 1px solid transparent; background: transparent; color: var(--ink); cursor: pointer; }
+  .stepper li button[aria-selected="true"] { background: var(--amber-wash); border-color: var(--amber); font-weight: 600; }
+  .stage { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+  .stage h3 { margin: 0 0 8px; font-size: 16px; }
+  .stage .where { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+  .chip { font: 12px var(--mono); padding: 3px 8px; border-radius: 8px; background: var(--surface-alt); color: var(--ink); }
+  .chip.prd { background: var(--ok-wash); color: var(--ok); }
+  .nav { display: flex; gap: 8px; margin-top: 12px; }
+  .nav button { font: 500 13px var(--sans); padding: 6px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink); cursor: pointer; }
+  /* components */
+  details { border-top: 1px solid var(--border); padding: 10px 0; }
+  details:first-of-type { border-top: 0; }
+  summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+  summary .mono { font-weight: 400; color: var(--muted); margin-left: 6px; }
+  details p, details ul { font-size: 14px; margin: 8px 0 0; }
+  details ul { padding-left: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font: 600 12px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .tablewrap { overflow-x: auto; }
+  pre { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; overflow-x: auto;
+    font: 12.5px/1.5 var(--mono); margin: 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 680px) { .grid2 { grid-template-columns: 1fr; } }
+  .grid2 ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .grid2 li { margin: 5px 0; }
+  .fail { display: grid; gap: 8px; }
+  .fail div { background: var(--surface-alt); border-radius: 12px; padding: 10px 14px; font-size: 14px; }
+  .fail b { display: block; }
+  footer { font: 12px var(--mono); color: var(--muted); text-align: center; margin-top: 24px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Devpost Learn · Spec <span class="pill" id="status">approved</span></div>
+  <h1>Small Claims Copilot</h1>
+  <p class="lede">How it's built: a React page and a small Express server on your laptop. Claude reads and links; plain code checks and decides what counts as backed.</p>
+
+  <section class="plain">
+    <h2>How this works, in plain language</h2>
+    <p><b>The web page</b> (React) is everything you see. It keeps your case in the browser's <b>localStorage</b> (a notepad the browser keeps for one site), so it's still there when you come back.</p>
+    <p><b>The helper server</b> (Express) holds the <b>Claude API key</b>, <b>reads uploaded .txt/.pdf files</b> page by page, and <b>talks to Claude</b>.</p>
+    <p><b>Claude answers two kinds of questions:</b> per document, "list the facts and quote the exact words"; once per packet, "which statements do these facts support or contradict, what conflicts, what follow-ups?" <b>Zod</b> rejects any answer in the wrong shape.</p>
+    <p style="margin:0"><b>Plain code is the referee:</b> it checks every quoted excerpt really appears in the document and computes the page, throws out failures, and only then lets a statement be ✓ backed. Code also sorts the timeline, detects conflicts, flags gaps, and attaches official links.</p>
+  </section>
+
+  <section>
+    <h2>Architecture</h2>
+    <svg viewBox="0 0 860 330" role="img" aria-label="Browser with React app and localStorage talks to Express server over /api; server reads files with unpdf and calls the Claude API; shared referee code verifies excerpts on the server and assembles the packet in the browser.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+      <!-- browser -->
+      <rect class="box" x="10" y="20" width="300" height="290" rx="16"/>
+      <text x="26" y="44" style="font-weight:600">Browser · localhost:5173</text>
+      <rect class="hl" x="26" y="60" width="268" height="66" rx="12"/>
+      <text x="40" y="84">React app</text>
+      <text class="sub" x="40" y="104">notice · tabs · Describe · Evidence · Review</text>
+      <rect class="box" x="26" y="140" width="268" height="54" rx="12" style="fill:var(--surface)"/>
+      <text x="40" y="162">localStorage</text>
+      <text class="sub" x="40" y="180">scc:case:my · scc:case:demo</text>
+      <rect class="ref" x="26" y="208" width="268" height="86" rx="12"/>
+      <text x="40" y="232">shared/packet.ts · the referee</text>
+      <text class="sub" x="40" y="252">backed only via verified facts</text>
+      <text class="sub" x="40" y="268">conflicts · gaps · timeline · links</text>
+      <text class="sub" x="40" y="284">(pure code, unit-tested)</text>
+      <path class="line" d="M160,126 L160,138"/>
+      <!-- server -->
+      <rect class="box" x="400" y="20" width="250" height="290" rx="16"/>
+      <text x="416" y="44" style="font-weight:600">Express · localhost:3001</text>
+      <rect class="box" x="416" y="60" width="218" height="54" rx="12" style="fill:var(--surface)"/>
+      <text x="430" y="82">POST /api/documents</text>
+      <text class="sub" x="430" y="100">type/size checks · unpdf pages</text>
+      <rect class="box" x="416" y="124" width="218" height="74" rx="12" style="fill:var(--surface)"/>
+      <text x="430" y="146">POST /api/extract</text>
+      <text class="sub" x="430" y="164">Claude → Zod →</text>
+      <text class="sub" x="430" y="180" style="fill:var(--ok)">excerpt verification + page</text>
+      <rect class="box" x="416" y="208" width="218" height="74" rx="12" style="fill:var(--surface)"/>
+      <text x="430" y="230">POST /api/analyze</text>
+      <text class="sub" x="430" y="248">Claude → Zod →</text>
+      <text class="sub" x="430" y="264" style="fill:var(--ok)">drop unknown fact IDs</text>
+      <text class="sub" x="416" y="302">.env: ANTHROPIC_API_KEY (never sent to browser)</text>
+      <!-- claude -->
+      <rect class="hl" x="720" y="130" width="130" height="80" rx="14"/>
+      <text x="785" y="162" text-anchor="middle">Claude API</text>
+      <text class="sub" x="785" y="182" text-anchor="middle">claude-opus-5-5</text>
+      <path class="line" d="M294,92 L412,88"/>
+      <text class="sub" x="300" y="80">/api (Vite proxy)</text>
+      <path class="line" d="M412,104 L298,110"/>
+      <path class="line" d="M636,160 L716,165"/>
+      <path class="line" d="M636,244 L716,190"/>
+      <path class="line dash" d="M24,328 L24,328"/>
+    </svg>
+  </section>
+
+  <section>
+    <h2>The core journey through the system</h2>
+    <div class="stepper">
+      <ol id="steps"></ol>
+      <div>
+        <div class="stage" id="stage"></div>
+        <div class="nav"><button id="prev">← Back</button><button id="next">Next →</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Components</h2>
+    <details open><summary>Packet assembly — the referee <span class="mono">shared/packet.ts</span></summary>
+      <ul>
+        <li><b>Statements:</b> backed iff ≥1 supporting fact ID exists among verified facts; otherwise ⚠ your word only. No other path.</li>
+        <li><b>Conflicts:</b> code-detected (same category + subject, different values) and AI-proposed; marked <code>checked</code> when code confirms values differ, else <code>AI interpretation</code>. Both sides shown.</li>
+        <li><b>Gaps:</b> rules: location ≠ yes, amount blank, no documents, failed documents.</li>
+        <li><b>Follow-ups:</b> rule + AI; topic → curated California Courts link with last-checked date.</li>
+        <li><b>Timeline:</b> dated facts sorted; undated in "date unknown."</li>
+      </ul>
+      <p class="mono" style="color:var(--ok)">prd.md › Review packet</p></details>
+    <details><summary>Fact extraction <span class="mono">server/ai/extractFacts.ts</span></summary>
+      <p>One Claude call per document via <code>messages.parse</code> + Zod. Document wrapped in <code>&lt;document&gt;</code>/<code>&lt;page n&gt;</code> tags; system prompt: document content is untrusted data, never instructions. Every excerpt verified in <code>shared/excerpt.ts</code> (whitespace/curly-quote normalized); page computed by code; failures dropped and counted. Results cached per document.</p>
+      <p class="mono" style="color:var(--ok)">prd.md › Generate packet</p></details>
+    <details><summary>Analysis <span class="mono">server/ai/analyze.ts</span></summary>
+      <p>One call with statements, description, verified facts. Returns description claims (each quoting the description, verified), statement↔fact links, possible conflicts, follow-ups with <i>why it matters</i> + topic, summary. Unknown fact IDs dropped.</p>
+      <p class="mono" style="color:var(--ok)">prd.md › Generate packet · Review packet</p></details>
+    <details><summary>Upload endpoint <span class="mono">server/upload.ts</span></summary>
+      <p>multer memory storage, 2 MB limit; <code>.txt</code> (UTF-8) or <code>.pdf</code> (must start <code>%PDF-</code>, text via unpdf per page). No text → "scanned PDFs aren't supported." Files never executed or stored.</p>
+      <p class="mono" style="color:var(--ok)">prd.md › Add evidence</p></details>
+    <details><summary>Case store <span class="mono">src/state/caseStore.ts</span></summary>
+      <p><code>useCase(tab)</code>: separate localStorage keys for My case and Demo case; Zod-validated on load; <code>clear</code>, <code>resetDemo</code>; save failure → banner, keeps working in memory.</p>
+      <p class="mono" style="color:var(--ok)">prd.md › Case tabs and demo case · States and Boundaries</p></details>
+    <details><summary>Steps &amp; shell <span class="mono">src/App.tsx · src/steps/* · src/packet/*</span></summary>
+      <p>Notice, tabs, stepper, Clear case. Describe fields (no address/SSN/bank). Evidence: drop zone, paste, list with status/remove/retry, backing prompts (templates), AI disclosure. Review: NeedsAttention → FollowUps → Statements → Timeline → EvidenceList → Summary; <code>SourceExcerpt</code> in Geist Mono; Print.</p>
+      <p class="mono" style="color:var(--ok)">prd.md › Describe · Add evidence · Review packet · Print · Clear case</p></details>
+    <details><summary>Editing <span class="mono">src/packet/Editable.tsx</span></summary>
+      <p>Edits stored as <code>edits[itemId]</code>, reapplied on render; survive regenerate when the ID still exists. No data path sets a status. Status only comes from <code>assemblePacket</code>.</p>
+      <p class="mono" style="color:var(--ok)">prd.md › Editing</p></details>
+    <details><summary>Demo case <span class="mono">src/demo/demoCase.ts · demo-files/</span></summary>
+      <p>Fictional contractor dispute: contract.txt ($2,400), invoice.pdf ($2,800), texts.txt, deposit receipt. Pre-extracted text so the tab works instantly; facts still extracted live. Same files in <code>demo-files/</code> for live upload.</p>
+      <p class="mono" style="color:var(--ok)">prd.md › Case tabs and demo case</p></details>
+  </section>
+
+  <section>
+    <h2>Where data lives</h2>
+    <div class="tablewrap"><table>
+      <tr><th>Data</th><th>Lives in</th><th>When you come back</th></tr>
+      <tr><td>Case input, document text, facts, packet, edits</td><td>localStorage (per tab)</td><td>restored as-is</td></tr>
+      <tr><td>Uploaded file bytes</td><td>server memory, one request</td><td>gone; only extracted text kept</td></tr>
+      <tr><td>API key</td><td><code>.env</code> on server</td><td>never reaches the browser</td></tr>
+      <tr><td>Official links</td><td><code>shared/officialLinks.ts</code></td><td>code, with last-checked dates</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>File structure</h2>
+<pre>Small-Claims-Copilot/
+├── vite.config.ts      # React + proxy /api → :3001
+├── .env.example        # ANTHROPIC_API_KEY=
+├── shared/             # pure TS for browser + server, most tests
+│   ├── schemas.ts  excerpt.ts  normalize.ts  statements.ts
+│   ├── conflicts.ts  gaps.ts  timeline.ts  officialLinks.ts
+│   └── packet.ts       # assemblePacket(): the referee
+├── server/
+│   ├── index.ts  upload.ts
+│   └── ai/  client.ts  prompts.ts  extractFacts.ts  analyze.ts
+├── src/
+│   ├── App.tsx  api.ts  styles.css
+│   ├── state/caseStore.ts   demo/demoCase.ts
+│   ├── components/  steps/  packet/
+├── demo-files/         # synthetic .txt + one .pdf
+├── tests/  fixtures/ shared/ server/ live/
+└── devpost/            # planning docs</pre>
+  </section>
+
+  <section>
+    <h2>Stack &amp; how to run</h2>
+    <div class="grid2">
+      <ul>
+        <li>TypeScript 6.0.x (7.0 shipped today: too fresh)</li>
+        <li>Vite 8 + React 19 · Express 5 · multer 2</li>
+        <li>unpdf 1.9 · Zod 4 · Vitest 5 · supertest</li>
+        <li>@anthropic-ai/sdk 0.135 · <code>claude-opus-5-5</code></li>
+      </ul>
+<pre>npm install
+cp .env.example .env   # add your key
+npm run dev            # open localhost:5173
+npm test               # no key needed</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where it breaks, and what you see</h2>
+    <div class="fail">
+      <div><b>Claude call fails / malformed / refuses</b>Extraction: that doc shows failed with Retry/Remove; rest still works. Analysis: banner, inputs and previous packet kept. Nothing unverified shown as backed.</div>
+      <div><b>Scanned PDF, wrong type, &gt;2 MB, 11th document</b>Clear inline message on that file; nothing crashes.</div>
+      <div><b>localStorage full or blocked</b>"Couldn't save. Your case works until you close this tab."</div>
+      <div><b>Slow AI</b>Per-document "Reading invoice.pdf…" and Generate disabled while running.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Decisions &amp; open issues</h2>
+    <div class="grid2">
+      <div><p class="eyebrow">Your decisions</p><ul>
+        <li>TS + React + Express + Zod + Vitest + localStorage</li>
+        <li>Your Claude API key in <code>.env</code>; Opus 5.5</li>
+        <li><b>PDF in</b> (scans fail clearly)</li>
+        <li><b>10 documents</b>, 2 MB each</li>
+        <li>Local only; no deployment for now</li>
+      </ul></div>
+      <div><p class="eyebrow">Verify during build</p><ul>
+        <li>Exact California Courts URLs + last-checked dates</li>
+        <li><code>fallbacks: "default"</code> with <code>messages.parse</code></li>
+        <li>Real token cost on first live call</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <footer>Companion to devpost/spec.md, which is the canonical version.</footer>
+</main>
+<script>
+  const steps = [
+    ["Open the app", "The browser loads the React page from Vite. <code>caseStore</code> reads the active tab's case from localStorage: empty for My case, the seeded fictional case for Demo case.", ["src/App.tsx", "src/state/caseStore.ts", "src/demo/demoCase.ts"], "Case tabs and demo case"],
+    ["Describe", "Typing updates the case in memory; it's saved to localStorage on every change. No address, SSN, or bank fields.", ["src/steps/DescribeStep.tsx"], "Describe: clarifying questions"],
+    ["Upload or paste", "The browser checks type, size, and count (10 × 2 MB). Uploads go to <code>POST /api/documents</code>; the server re-checks and extracts text, PDFs page by page with unpdf. Pasted text skips the server.", ["src/steps/EvidenceStep.tsx", "server/upload.ts", "shared/limits.ts"], "Add evidence"],
+    ["Backing prompts", "<code>statements.ts</code> turns Describe answers into prompts like \"You said he owes $1,200. Do you have a document that shows it?\" No AI call.", ["shared/statements.ts"], "Add evidence"],
+    ["Extract facts", "Generate → for each new document, <code>POST /api/extract</code> in parallel. Claude returns facts with excerpts; <b>the server checks each excerpt really appears in the text</b> and computes its page. Failures are dropped and counted.", ["server/ai/extractFacts.ts", "shared/excerpt.ts", "shared/normalize.ts"], "Generate packet"],
+    ["Analyze", "<code>POST /api/analyze</code> with statements and verified facts. Claude links statements to facts, proposes conflicts and follow-ups, writes a summary. The server drops links to unknown facts.", ["server/ai/analyze.ts", "server/ai/prompts.ts"], "Generate packet"],
+    ["Assemble (the referee)", "In the browser, <code>assemblePacket()</code> decides backed vs your word only, confirms conflicts, adds gaps and official links, sorts the timeline. Saved to localStorage.", ["shared/packet.ts", "shared/conflicts.ts", "shared/gaps.ts", "shared/timeline.ts", "shared/officialLinks.ts"], "Review packet"],
+    ["Review, problems first", "Needs attention → Follow-ups → Statements → Timeline → Evidence → Summary. Click ✓ backed to see filename, page, and excerpt.", ["src/steps/ReviewStep.tsx", "src/packet/*"], "Review packet"],
+    ["Edit, regenerate, print", "Edits are stored by item ID and reapplied after regenerate; only new docs are re-extracted. Print uses print CSS: no chrome, excerpts expanded.", ["src/packet/Editable.tsx", "src/styles.css"], "Editing · Print"],
+  ];
+  const ol = document.getElementById('steps'), stage = document.getElementById('stage');
+  let cur = 0;
+  steps.forEach((s, i) => {
+    const li = document.createElement('li'), b = document.createElement('button');
+    b.textContent = (i + 1) + ' · ' + s[0]; b.setAttribute('role', 'tab');
+    b.onclick = () => show(i); li.appendChild(b); ol.appendChild(li);
+  });
+  function show(i) {
+    cur = i; const s = steps[i];
+    ol.querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-selected', j === i));
+    stage.innerHTML = '<h3>' + (i + 1) + ' · ' + s[0] + '</h3><p style="font-size:15px">' + s[1] + '</p><div class="where">' +
+      s[2].map(f => '<span class="chip">' + f + '</span>').join('') + '<span class="chip prd">prd.md › ' + s[3] + '</span></div>';
+  }
+  document.getElementById('prev').onclick = () => show(Math.max(0, cur - 1));
+  document.getElementById('next').onclick = () => show(Math.min(steps.length - 1, cur + 1));
+  show(0);
+</script>
+</body>
+</html>
