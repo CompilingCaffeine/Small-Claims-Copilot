@@ -1,5 +1,6 @@
 import express, { type ErrorRequestHandler } from "express";
 import type { AiClient } from "./ai/client.ts";
+import { AnalyzeRequest, analyzeCase } from "./ai/analyze.ts";
 import { ExtractRequest, extractFacts } from "./ai/extractFacts.ts";
 
 export function createApp({ ai }: { ai: AiClient }) {
@@ -22,6 +23,20 @@ export function createApp({ ai }: { ai: AiClient }) {
       return;
     }
     res.json({ facts: result.facts, droppedCount: result.droppedCount });
+  });
+
+  app.post("/api/analyze", async (req, res) => {
+    const parsed = AnalyzeRequest.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid case data." });
+      return;
+    }
+    const result = await analyzeCase(ai, parsed.data);
+    if (!result.ok) {
+      res.status(502).json({ error: result.error });
+      return;
+    }
+    res.json(result.analysis);
   });
 
   const onError: ErrorRequestHandler = (err, _req, res, _next) => {

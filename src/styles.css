@@ -108,7 +108,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   outline: 2px solid var(--amber); outline-offset: 2px;
 }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 
 /* Buttons */
 .btn {

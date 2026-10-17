@@ -74,6 +74,22 @@ export const Conflict = z.object({
 });
 export type Conflict = z.infer<typeof Conflict>;
 
+export const FollowUpTopic = z.enum(["where_to_file", "serving", "amount_limits", "evidence_prep", "none"]);
+export type FollowUpTopic = z.infer<typeof FollowUpTopic>;
+
+/** The analysis after the server has validated every reference in Claude's answer. */
+export const Analysis = z.object({
+  statements: z.array(UserStatement),
+  links: z.array(z.object({ statementId: z.string(), supports: z.array(z.string()), contradicts: z.array(z.string()) })),
+  conflicts: z.array(
+    z.object({ factIds: z.array(z.string()), statementIds: z.array(z.string()), subject: z.string(), note: z.string() }),
+  ),
+  followUps: z.array(z.object({ question: z.string(), whyItMatters: z.string(), topic: FollowUpTopic })),
+  summary: z.string(),
+  droppedClaimCount: z.number().int(),
+});
+export type Analysis = z.infer<typeof Analysis>;
+
 export const Gap = z.object({ id: z.string(), title: z.string(), detail: z.string() });
 export type Gap = z.infer<typeof Gap>;
 
@@ -130,7 +146,9 @@ export const CaseState = z.object({
   input: CaseInput,
   documents: z.array(SourceDocument),
   facts: z.record(z.string(), DocumentFacts),
-  packet: Packet.nullable(),
+  // Claude's validated answer. The packet itself is rebuilt from this plus the current
+  // documents on every render, so removing a document immediately removes its backing.
+  analysis: Analysis.nullable(),
   edits: z.record(z.string(), z.string()),
   generatedAt: z.string().nullable(),
 });
@@ -142,7 +160,7 @@ export function emptyCase(): CaseState {
     input: { description: "", amountOwed: "", overdue: "", saidWontPay: "", knowsLocation: "" },
     documents: [],
     facts: {},
-    packet: null,
+    analysis: null,
     edits: {},
     generatedAt: null,
   };

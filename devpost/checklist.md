@@ -19,7 +19,7 @@ Build mode: fast (chosen by learner; pauses at the slice 3 checkpoint and final 
   Learner check: Run `npm run dev`, open http://localhost:5173, paste a short fictional contract into Add evidence, and extract. Each fact should show the exact words it came from. Then edit the pasted text so a quoted phrase no longer appears, extract again, and confirm that fact disappears instead of being shown as backed.
   Commit: `Scaffold app and verify extracted facts against exact excerpts`
 
-- [ ] **2. Describe your case and see each statement marked ✓ backed or ⚠ your word only**
+- [x] **2. Describe your case and see each statement marked ✓ backed or ⚠ your word only**
   Becomes usable: Fill in Describe (description plus the four clarifying questions), see backing prompts in Add evidence ("You said he owes $2,800. Do you have…"), click Generate packet, and get a Review page listing your statements, each ✓ backed by (click to reveal the document, page, and excerpt) or ⚠ your word only.
   Why now: This is the kernel itself, separating claims from proof, and it sits right on top of slice 1's verified facts. Everything after this is packaging around it.
   PRD ref: `prd.md > The Core Journey` (steps 2–6), `prd.md > Describe: clarifying questions`, `prd.md > Add evidence` (backing prompts), `prd.md > Review packet` (Statements), `prd.md > Editing` (no hand-marked backing), `prd.md > States and Boundaries` (Nothing to generate, No documents, AI returns malformed output)
@@ -86,3 +86,6 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - `fallbacks: "default"` works with `client.beta.messages.parse` (beta `server-side-fallback-2026-07-01`) — confirmed on the first live call, so it stays in.
 - Cost estimate corrected: one contract extraction used ~1.6k input / 1.4k output tokens (≈ $0.03), so a full demo run (4 documents + analysis) is roughly $0.15–0.25, not "well under a cent" — the first live call measured it.
 - Extraction asks Claude for each value *as written* (`valueText`) and code normalizes it; a date/amount whose normalized value isn't written in its own excerpt is dropped, and `eventDate` is kept only when that date is written in the excerpt — a stricter version of the spec's "value normalization," closing a gap where a real excerpt could carry a mislabeled value.
+- The case stores Claude's validated `analysis` instead of a finished `packet`; `assemblePacket()` rebuilds the packet from it plus the current documents on every render — so removing a document immediately un-backs what it supported (PRD: "after removing, it's gone and no longer used in the packet") without another AI call. `assemblePacket()` also re-checks each fact's excerpt against its document before it can back anything.
+- Description claims come back from Claude with temporary keys (`d1`, `d2`…) that the server maps to content-hash IDs after confirming each quote is in the description — the analysis output needed a way to link claims it had just created.
+- Live analysis call measured at ~3.2k input / 3.2k output tokens (≈ $0.08); a full demo generate is ~$0.20–0.30.

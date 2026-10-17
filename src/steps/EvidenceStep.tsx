@@ -2,15 +2,18 @@ import { useState } from "react";
 import { MAX_DOCUMENTS, MAX_PASTE_CHARS } from "../../shared/limits.ts";
 import { formatCents, formatIsoDate } from "../../shared/normalize.ts";
 import type { CaseState, Fact, SourceDocument } from "../../shared/schemas.ts";
-import { extractFacts } from "../api.ts";
+import { backingPrompts } from "../../shared/statements.ts";
 import { SourceExcerpt } from "../components/SourceExcerpt.tsx";
+import { cannotGenerateReason, extractDocument, type Update } from "../generate.ts";
 
 type Props = {
   state: CaseState;
-  update: (fn: (s: CaseState) => CaseState) => void;
+  update: Update;
+  generating: boolean;
+  onGenerate: () => void;
 };
 
-export function EvidenceStep({ state, update }: Props) {
+export function EvidenceStep({ state, update, generating, onGenerate }: Props) {
   const [pasteName, setPasteName] = useState("");
   const [pasteText, setPasteText] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -46,16 +49,8 @@ export function EvidenceStep({ state, update }: Props) {
     });
   }
 
-  async function extract(doc: SourceDocument) {
-    update((s) => ({ ...s, facts: { ...s.facts, [doc.id]: { status: "pending", facts: [], droppedCount: 0 } } }));
-    try {
-      const result = await extractFacts(doc);
-      update((s) => ({ ...s, facts: { ...s.facts, [doc.id]: { status: "done", ...result } } }));
-    } catch (err) {
-      const error = err instanceof Error ? err.message : "Extraction failed.";
-      update((s) => ({ ...s, facts: { ...s.facts, [doc.id]: { status: "failed", facts: [], droppedCount: 0, error } } }));
-    }
-  }
+  const prompts = backingPrompts(state.input);
+  const blocked = cannotGenerateReason(state);
 
   return (
     <section className="panel">
@@ -64,6 +59,17 @@ export function EvidenceStep({ state, update }: Props) {
         Add the documents behind your case: a contract, an invoice, a text thread. Their text is sent to an AI service
         (Claude) to pull out facts, so use only fictional documents for the demo.
       </p>
+
+      <div className="card" style={{ background: "var(--bg)", marginBottom: 20 }}>
+        <div className="small" style={{ fontWeight: 600, marginBottom: 6 }}>
+          What would back what you said
+        </div>
+        <ul className="small" style={{ margin: 0, paddingLeft: 18 }}>
+          {prompts.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      </div>
 
       <div className="stack">
         <label className="field">
@@ -90,10 +96,18 @@ export function EvidenceStep({ state, update }: Props) {
             key={doc.id}
             doc={doc}
             state={state}
-            onExtract={() => extract(doc)}
+            onRetry={() => extractDocument(doc, update)}
             onRemove={() => removeDocument(doc.id)}
           />
         ))}
+      </div>
+
+      <div className="row" style={{ marginTop: 24 }}>
+        <button type="button" className="btn primary" onClick={onGenerate} disabled={generating || blocked !== null}>
+          {generating ? "Generating…" : "Generate packet"}
+        </button>
+        {blocked && <span className="small muted">{blocked}</span>}
+        {generating && <span className="small muted">Reading your documents and checking every quote…</span>}
       </div>
     </section>
   );
@@ -102,36 +116,45 @@ export function EvidenceStep({ state, update }: Props) {
 function DocumentCard({
   doc,
   state,
-  onExtract,
+  onRetry,
   onRemove,
 }: {
   doc: SourceDocument;
   state: CaseState;
-  onExtract: () => void;
+  onRetry: () => void;
   onRemove: () => void;
 }) {
   const extraction = state.facts[doc.id];
+  const [showFacts, setShowFacts] = useState(false);
   return (
     <div className="card">
       <div className="doc-row">
         <span>
           <span className="doc-name">{doc.filename}</span>{" "}
           <span className="tag neutral">{doc.kind}</span>{" "}
-          {extraction?.status === "pending" && <span className="tag neutral">Reading…</span>}
+          {!extraction && <span className="tag neutral">ready</span>}
+          {extraction?.status === "pending" && <span className="tag neutral">reading…</span>}
           {extraction?.status === "done" && <span className="tag ok">✓ {extraction.facts.length} facts</span>}
           {extraction?.status === "failed" && <span className="tag bad">✕ failed</span>}
         </span>
         <span className="row">
-          <button type="button" className="btn" onClick={onExtract} disabled={extraction?.status === "pending"}>
-            {extraction?.status === "done" ? "Extract again" : extraction?.status === "failed" ? "Retry" : "Extract facts"}
-          </button>
+          {extraction?.status === "done" && (
+            <button type="button" className="btn quiet" onClick={() => setShowFacts(!showFacts)}>
+              {showFacts ? "Hide facts" : "Show facts"}
+            </button>
+          )}
+          {extraction?.status === "failed" && (
+            <button type="button" className="btn" onClick={onRetry}>
+              Retry
+            </button>
+          )}
           <button type="button" className="btn quiet" onClick={onRemove}>
             Remove
           </button>
         </span>
       </div>
       {extraction?.status === "failed" && <p className="small" style={{ color: "var(--bad-ink)" }}>{extraction.error}</p>}
-      {extraction?.status === "done" && (
+      {extraction?.status === "done" && showFacts && (
         <div style={{ marginTop: 10 }}>
           {extraction.facts.map((fact) => (
             <div key={fact.id} className="fact">

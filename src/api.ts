@@ -1,4 +1,4 @@
-import type { Fact, SourceDocument } from "../shared/schemas.ts";
+import type { Analysis, CaseInput, Fact, SourceDocument } from "../shared/schemas.ts";
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   let res: Response;
@@ -14,4 +14,8 @@ async function post<T>(url: string, body: unknown): Promise<T> {
 
 export function extractFacts(document: Pick<SourceDocument, "id" | "filename" | "pages">) {
   return post<{ facts: Fact[]; droppedCount: number }>("/api/extract", { document });
+}
+
+export function analyzeCase(input: CaseInput, facts: Fact[]) {
+  return post<Analysis>("/api/analyze", { input, facts });
 }
