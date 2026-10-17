@@ -11,7 +11,7 @@ export function Summary({ packet, setEdit }: { packet: Packet; setEdit: SetEdit 
         <h2>Case summary</h2>
         <StatusTag status="ai" />
       </div>
-      <p className="small muted">Written by AI from your statements and backed facts. Review and edit before relying on it.</p>
+      <p className="small muted">Written by AI. Review and edit before relying on it.</p>
       <Editable
         label="case summary"
         multiline

@@ -7,7 +7,6 @@ import { findExcerpt } from "./excerpt.ts";
 import { detectFlags } from "./flags.ts";
 import { contentId } from "./ids.ts";
 import { leadingSteps, trailingSteps } from "./nextSteps.ts";
-import { parseAmountToCents } from "./normalize.ts";
 import { linkFor } from "./officialLinks.ts";
 import type { Analysis, CaseState, EvidenceRow, Fact, NextStep, Packet, StatementResult } from "./schemas.ts";
 import { buildTimeline } from "./timeline.ts";
@@ -79,7 +78,6 @@ export function assemblePacket(
     // Passed through as their own section. Nothing above reads them, so a photo can't back anything.
     photos: state.photos ?? [],
     summary: { text: analysis.summary, origin: "ai", edited: false },
-    amountClaimedCents: parseAmountToCents(state.input.amountOwed),
     droppedFactCount: Object.values(state.facts).reduce((n, f) => n + f.droppedCount, 0),
   };
   return applyEdits(packet, state.edits ?? {});

@@ -132,10 +132,12 @@ describe("assemblePacket", () => {
     }
   });
 
-  it("shows an amount claimed that isn't a clear dollar figure as unknown", () => {
+  it("treats an amount claimed that isn't a clear dollar figure as unknown, quoting the user's words", () => {
     const state = caseWithContract();
-    expect(assemblePacket({ ...state, input: { ...state.input, amountOwed: "$2,400" } }, analysis([])).amountClaimedCents).toBe(240000);
-    expect(assemblePacket({ ...state, input: { ...state.input, amountOwed: "a few hundred" } }, analysis([])).amountClaimedCents).toBeNull();
+    const step = (amountOwed: string) =>
+      assemblePacket({ ...state, input: { ...state.input, amountOwed } }, analysis([])).nextSteps.find((s) => s.id === "step-amount");
+    expect(step("$2,400")).toBeUndefined();
+    expect(step("a few hundred")?.action).toBe("Turn “a few hundred” into an exact dollar amount, and find the document that shows it.");
   });
 
   describe("photo evidence", () => {

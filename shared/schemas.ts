@@ -181,7 +181,6 @@ export const Packet = z.object({
   evidence: z.array(EvidenceRow),
   photos: z.array(PhotoEvidence), // separate from text evidence; never referenced by statements
   summary: z.object({ text: z.string(), origin: z.literal("ai"), edited: z.boolean() }),
-  amountClaimedCents: z.number().int().nullable(), // null = unknown, never guessed
   droppedFactCount: z.number().int(),
 });
 export type Packet = z.infer<typeof Packet>;

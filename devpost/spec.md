@@ -163,7 +163,7 @@ UserStatement { id; origin: "answer"|"description"; text; quote? }
 Packet { flags: Flag[]; nextSteps: NextStep[]; documentDifferences: Conflict[];
          statements: { statement; status: "backed"|"your_word_only"; factIds; contradictingFactIds; originalText? }[];
          timeline: TimelineEvent[]; undated: TimelineEvent[]; evidence: EvidenceRow[]; photos: PhotoEvidence[];
-         summary: { text; origin: "ai"; edited }; amountClaimedCents: number|null; droppedFactCount }
+         summary: { text; origin: "ai"; edited }; droppedFactCount }
 Flag { id; basis: "checked"|"ai_interpretation"; statement: UserStatement; factIds; note? }
 NextStep { id; action; whyItMatters; origin: "rule"|"ai"; link?: { title; url; lastChecked }; note? }
 Conflict { id; basis: "checked"|"ai_interpretation"; subject; note?; sides: { label; value; factId? }[] }

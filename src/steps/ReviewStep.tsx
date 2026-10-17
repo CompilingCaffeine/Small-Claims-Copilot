@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { formatCents } from "../../shared/normalize.ts";
 import { assemblePacket, verifiedFacts } from "../../shared/packet.ts";
 import type { CaseState } from "../../shared/schemas.ts";
 import type { Update } from "../generate.ts";
@@ -58,10 +57,7 @@ export function ReviewStep({ state, update }: { state: CaseState; update: Update
       </div>
       <header className="print-only print-header">
         <h1>Case packet</h1>
-        <p>
-          Amount claimed: {packet.amountClaimedCents === null ? "unknown" : formatCents(packet.amountClaimedCents)}
-          {state.generatedAt && ` · Generated ${new Date(state.generatedAt).toLocaleDateString()}`} · Small Claims Copilot
-        </p>
+        {state.generatedAt && <p>Generated {new Date(state.generatedAt).toLocaleDateString()}</p>}
         <p>
           ✓ backed by = a document says so (exact words quoted), not that it's proven true. ⚠ your word only = no document
           says so yet.

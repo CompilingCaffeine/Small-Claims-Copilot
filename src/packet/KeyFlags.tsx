@@ -11,7 +11,7 @@ export function KeyFlags({ packet, factsById, documents }: { packet: Packet; fac
       <p className="lede">
         {packet.flags.length === 0
           ? "Nothing you said disagrees with your documents."
-          : "Where your own documents disagree with what you said. Fix your account, or be ready to explain the document."}
+          : "Where your own documents disagree with what you said."}
       </p>
       <div className="stack">
         {packet.flags.map((flag) => (
