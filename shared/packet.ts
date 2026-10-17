@@ -1,8 +1,12 @@
 // assemblePacket(): the referee. Pure code, runs in the browser. Status is decided
 // here and nowhere else: a statement is ✓ backed only if it links to a fact whose
 // excerpt is confirmed to be in a document that's still part of the case.
+import { detectConflicts } from "./conflicts.ts";
 import { findExcerpt } from "./excerpt.ts";
-import type { Analysis, CaseState, Fact, Packet, StatementResult } from "./schemas.ts";
+import { detectGaps } from "./gaps.ts";
+import { contentId } from "./ids.ts";
+import { linkFor } from "./officialLinks.ts";
+import type { Analysis, CaseState, Fact, FollowUp, Packet, StatementResult } from "./schemas.ts";
 
 /** Facts that survive re-checking against the documents currently in the case. */
 export function verifiedFacts(state: Pick<CaseState, "documents" | "facts">): Fact[] {
@@ -17,7 +21,7 @@ export function verifiedFacts(state: Pick<CaseState, "documents" | "facts">): Fa
   return out;
 }
 
-export function assemblePacket(state: Pick<CaseState, "documents" | "facts">, analysis: Analysis): Packet {
+export function assemblePacket(state: Pick<CaseState, "input" | "documents" | "facts">, analysis: Analysis): Packet {
   const facts = verifiedFacts(state);
   const factIds = new Set(facts.map((f) => f.id));
 
@@ -34,10 +38,19 @@ export function assemblePacket(state: Pick<CaseState, "documents" | "facts">, an
   });
 
   const droppedFactCount = Object.values(state.facts).reduce((n, f) => n + f.droppedCount, 0);
+  const conflicts = detectConflicts({ facts, documents: state.documents, statements: analysis.statements }, analysis.conflicts);
+  const { gaps, followUps: ruleFollowUps } = detectGaps(state.input, state.documents, state.facts, statements);
+  const aiFollowUps: FollowUp[] = analysis.followUps.map((f) => ({
+    id: contentId("fu", f.question),
+    question: f.question,
+    whyItMatters: f.whyItMatters,
+    origin: "ai",
+    ...(linkFor(f.topic) ? { link: linkFor(f.topic) } : {}),
+  }));
 
   return {
-    needsAttention: { conflicts: [], gaps: [] },
-    followUps: [],
+    needsAttention: { conflicts, gaps },
+    followUps: [...ruleFollowUps, ...aiFollowUps],
     statements,
     timeline: [],
     undated: [],

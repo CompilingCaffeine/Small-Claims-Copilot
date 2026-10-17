@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { findExcerpt } from "../../shared/excerpt.ts";
 import { contentId } from "../../shared/ids.ts";
-import { formatCents, formatIsoDate } from "../../shared/normalize.ts";
+import { formatFactValue } from "../../shared/normalize.ts";
 import { answerStatements } from "../../shared/statements.ts";
 import { CaseInput, Fact, FollowUpTopic, type Analysis, type UserStatement } from "../../shared/schemas.ts";
 import type { AiClient } from "./client.ts";
@@ -40,7 +40,7 @@ export async function analyzeCase(ai: AiClient, { input, facts }: AnalyzeRequest
         id: f.id,
         document: f.documentId,
         subject: f.subject,
-        value: f.value.type === "amount" ? formatCents(f.value.cents) : f.value.type === "date" ? formatIsoDate(f.value.iso) : f.value.text,
+        value: formatFactValue(f.value),
         excerpt: f.excerpt,
       })),
     }),

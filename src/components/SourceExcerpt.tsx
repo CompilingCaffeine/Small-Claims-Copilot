@@ -7,7 +7,7 @@ export function SourceExcerpt({ fact, filename, label }: { fact: Fact; filename:
   return (
     <span>
       <button type="button" className="excerpt-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {label ?? `${filename}, p. ${fact.page}`}
+        {label ?? `${filename}, p. ${fact.page}: “${preview(fact.excerpt)}”`}
       </button>
       {/* Always rendered in print so the packet carries its proof on paper. */}
       <blockquote className="excerpt" hidden={!open}>
@@ -18,4 +18,9 @@ export function SourceExcerpt({ fact, filename, label }: { fact: Fact; filename:
       </blockquote>
     </span>
   );
+}
+
+function preview(excerpt: string): string {
+  const t = excerpt.replace(/\s+/g, " ").trim();
+  return t.length > 48 ? `${t.slice(0, 46).trimEnd()}…` : t;
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MAX_DOCUMENTS, MAX_PASTE_CHARS } from "../../shared/limits.ts";
-import { formatCents, formatIsoDate } from "../../shared/normalize.ts";
-import type { CaseState, Fact, SourceDocument } from "../../shared/schemas.ts";
+import { formatFactValue } from "../../shared/normalize.ts";
+import type { CaseState, SourceDocument } from "../../shared/schemas.ts";
 import { backingPrompts } from "../../shared/statements.ts";
 import { SourceExcerpt } from "../components/SourceExcerpt.tsx";
 import { cannotGenerateReason, extractDocument, type Update } from "../generate.ts";
@@ -160,7 +160,7 @@ function DocumentCard({
             <div key={fact.id} className="fact">
               <div>{fact.originalWording}</div>
               <div className="small muted">
-                <span className="mono">{fact.subject}</span> · {formatValue(fact)} ·{" "}
+                <span className="mono">{fact.subject}</span> · {formatFactValue(fact.value)} ·{" "}
                 <SourceExcerpt fact={fact} filename={doc.filename} />
               </div>
             </div>
@@ -175,17 +175,6 @@ function DocumentCard({
       )}
     </div>
   );
-}
-
-export function formatValue(fact: Fact): string {
-  switch (fact.value.type) {
-    case "amount":
-      return formatCents(fact.value.cents);
-    case "date":
-      return formatIsoDate(fact.value.iso);
-    case "text":
-      return fact.value.text;
-  }
 }
 
 function newId(): string {

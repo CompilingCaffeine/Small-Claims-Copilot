@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { assemblePacket, verifiedFacts } from "../../shared/packet.ts";
 import type { CaseState } from "../../shared/schemas.ts";
+import { FollowUps } from "../packet/FollowUps.tsx";
+import { NeedsAttention } from "../packet/NeedsAttention.tsx";
 import { Statements } from "../packet/Statements.tsx";
 import { Summary } from "../packet/Summary.tsx";
 
@@ -27,6 +29,8 @@ export function ReviewStep({ state }: { state: CaseState }) {
             ` ${packet.droppedFactCount} extracted fact${packet.droppedFactCount === 1 ? " was" : "s were"} discarded because the quoted words weren't in the document.`}
         </p>
       )}
+      <NeedsAttention packet={packet} factsById={factsById} documents={state.documents} />
+      <FollowUps packet={packet} />
       <Statements packet={packet} factsById={factsById} state={state} />
       <Summary packet={packet} />
     </div>

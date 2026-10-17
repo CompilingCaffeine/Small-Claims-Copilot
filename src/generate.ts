@@ -2,7 +2,9 @@ import { verifiedFacts } from "../shared/packet.ts";
 import type { CaseState, DocumentFacts, SourceDocument } from "../shared/schemas.ts";
 import { analyzeCase, extractFacts } from "./api.ts";
 
-export type Update = (fn: (s: CaseState) => CaseState) => void;
+import type { Update } from "./state/caseStore.ts";
+
+export type { Update };
 
 /** Why Generate is disabled, or null when it can run. */
 export function cannotGenerateReason(state: CaseState): string | null {

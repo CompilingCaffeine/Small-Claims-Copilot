@@ -77,3 +77,14 @@ export function formatIsoDate(isoDate: string): string {
     timeZone: "UTC",
   });
 }
+
+export function formatFactValue(value: { type: "date"; iso: string } | { type: "amount"; cents: number } | { type: "text"; text: string }): string {
+  switch (value.type) {
+    case "amount":
+      return formatCents(value.cents);
+    case "date":
+      return formatIsoDate(value.iso);
+    case "text":
+      return value.text;
+  }
+}
