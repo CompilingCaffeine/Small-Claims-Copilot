@@ -89,24 +89,24 @@ Build mode: fast (chosen by learner; pauses at the slice 3 checkpoint and final 
 - [x] Print doesn't repeat the official page's URL after "Additional info" (the link already carries it)
 - [x] No "AI suggestion" tags on next steps
 - [x] Case summary at the top of the packet (under the notice); timeline at the bottom of Packet details
-- [ ] Photo evidence (slice 7) tried by the learner after the final review
+- [x] Photo evidence (slice 7) tried by the learner after the final review (reported the photo step still showing; fixed)
 - [x] A next step asking for a photo the case already has is hidden (demo: the deck photo hides "Take or gather dated photos of the finished deck stain")
 - [x] Shorter wording: summary note "Written by AI. Review and edit before relying on it.", Key flags lede without "Fix your account…", printed header shows only the generated date
 - [x] Printed PDF uses one typeface and four sizes, with each section starting on a new page
 - [x] Removed the photo hash disclaimer, the "Places where two of your documents…" lede, and both timeline notes; "Date unknown" → "Event: Date Unknown"
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship (first confirmed "Looks great!" before slice 7; reconfirm after trying photos)
+- [x] Final review complete — feedback resolved and learner confirms ready to ship ("Looks great!" before slice 7; "It's ready" after the photo and print changes)
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — brief recap (learner chose to skip the guided tour)
+- [x] Optional edit and transfer reflection addressed — edit offered with the tour, declined by skipping it; reflection question offered at hand-off
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: Guided route prepared and offered (follow the address key flag from the invoice to the screen); the learner first added photo evidence, then chose to skip the tour. Recorded as a brief recap via the app map, not hands-on practice.
+Route and stops: Reference-only route (not toured): `server/ai/extractFacts.ts` → `verifyFacts`/`findExcerpt`; `shared/flags.ts` → `confirmedByCode`/`looksLikeAddress`; `src/packet/KeyFlags.tsx` → `KeyFlags`.
+Edit outcome: Declined (the offered label edit in `KeyFlags.tsx` was skipped with the tour).
+Reflection: Offered once at hand-off; any answer goes only in the ignored learner profile.
+Activity mode: Recap. Map built from commit `2c82bff`, all 22 cited paths/symbols checked against source, opened offline with JavaScript disabled (no network requests, light/dark, 390 px wide without horizontal scroll).
 
 ## Revisions
 
