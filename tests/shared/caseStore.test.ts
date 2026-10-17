@@ -41,4 +41,22 @@ describe("case store", () => {
     const full = { ...memoryStorage(), setItem: () => { throw new Error("QuotaExceededError"); } } as Storage;
     expect(saveCase(full, "my", emptyCase())).toBe(false);
   });
+
+  it("loads a case saved before photos existed, with no photos", () => {
+    const storage = memoryStorage();
+    const { photos: _none, ...old } = { ...emptyCase(), input: { ...emptyCase().input, description: "Old case" } };
+    storage.setItem(STORAGE_KEYS.my, JSON.stringify(old));
+    expect(loadCase(storage, "my").state).toMatchObject({ photos: [], input: { description: "Old case" } });
+  });
+
+  it("marks a photo description interrupted by closing the page as failed", () => {
+    const storage = memoryStorage();
+    const photo = {
+      id: "p1", filename: "deck.jpg", thumbnail: "",
+      metadata: { origin: "technical_metadata", mimeType: "image/jpeg", byteSize: 10, width: 1, height: 1, sha256: "ab" },
+      descriptionStatus: "pending",
+    };
+    storage.setItem(STORAGE_KEYS.my, JSON.stringify({ ...emptyCase(), photos: [photo] }));
+    expect(loadCase(storage, "my").state.photos[0]).toMatchObject({ descriptionStatus: "failed", descriptionError: expect.stringMatching(/Add the photo again/) });
+  });
 });

@@ -68,6 +68,16 @@ Source: `scope.md > The POC Boundary`.
 - [ ] Prompts reflect what the user said in Step 1.
 - [ ] Unsupported file types and oversized files are rejected with a clear message; nothing crashes.
 
+### Photo evidence (experimental)
+Source: `scope.md > The POC Boundary` (added after the final review).
+- `.jpg`/`.png` photos can be added alongside documents (same 10-file / 2 MB limits). Each photo card shows a preview, **technical metadata read from the file** (type, pixel size, file size, SHA-256, and the camera's capture time if the file has one, labeled as possibly missing or changed), and an **AI visual description — review before using**.
+- Location (GPS) data is never read, shown, or sent; embedded metadata is removed from the copy sent to the AI.
+- The description is generated when the photo is added. If it fails, the photo and its metadata stay, with Retry. In the Demo case, the demo photo's description is a saved recording (no API call).
+- Photos never become facts and never make a statement ✓ backed. In the packet they have their own **Photo evidence** section in Packet details, and print keeps the labels, filename, and hash with a small thumbnail.
+- [ ] Adding `demo-files/deck-photo.jpg` shows its metadata and a labeled AI visual description; the number of ✓ backed statements doesn't change.
+- [ ] A renamed non-image (e.g. text named `.png`) is rejected with a clear message.
+- [ ] Removing the photo removes its metadata and description from the packet.
+
 ### Generate packet
 Source: `scope.md > The Unique Kernel`.
 - The AI extracts facts (people/roles, dates, amounts, promises, payments, events), each with its source document and exact supporting excerpt. The app checks every extracted fact; anything without a real excerpt from the document is discarded, never shown as backed.
@@ -136,7 +146,7 @@ Everything in **Features and Behavior** and **States and Boundaries** above: not
 
 ## Possible Later Enhancements
 - More automation of the overall process.
-- Richer document types (images/screenshots of texts, email imports).
+- Richer document types (OCR for screenshots of texts and scanned PDFs, email imports).
 - A broader curated library of official California Courts links.
 
 ## Non-Goals
@@ -144,6 +154,7 @@ Everything in **Features and Behavior** and **States and Boundaries** above: not
 - Legal advice, outcome predictions, deciding who's right — it's an organizer.
 - AI-generated legal citations or rules — unverifiable.
 - Treating a document's presence as proof its contents are true — "backed by" means "a document says so," not "it's true."
+- Treating a photo as proof of anything — its description is the AI's reading of the picture, and its file metadata doesn't establish when or where it was taken.
 
 ## Open Questions
 - **PDF support:** in for the PoC, or text/paste only with PDF labeled as a limitation? Decide in `4-spec` based on cost.

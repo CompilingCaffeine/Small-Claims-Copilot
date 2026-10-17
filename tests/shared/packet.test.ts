@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EDIT_KEYS } from "../../shared/edits.ts";
 import { assemblePacket, verifiedFacts } from "../../shared/packet.ts";
-import { emptyCase, type Analysis, type CaseState, type Fact } from "../../shared/schemas.ts";
+import { emptyCase, type Analysis, type CaseState, type Fact, type PhotoEvidence } from "../../shared/schemas.ts";
 
 const contractText = "The total contract price is $2,400.00, including labor and materials.";
 const priceFact: Fact = {
@@ -136,5 +136,41 @@ describe("assemblePacket", () => {
     const state = caseWithContract();
     expect(assemblePacket({ ...state, input: { ...state.input, amountOwed: "$2,400" } }, analysis([])).amountClaimedCents).toBe(240000);
     expect(assemblePacket({ ...state, input: { ...state.input, amountOwed: "a few hundred" } }, analysis([])).amountClaimedCents).toBeNull();
+  });
+
+  describe("photo evidence", () => {
+    const photo: PhotoEvidence = {
+      id: "photo1",
+      filename: "deck.jpg",
+      metadata: { origin: "technical_metadata", mimeType: "image/jpeg", byteSize: 1000, width: 800, height: 600, sha256: "ab".repeat(32) },
+      thumbnail: "data:image/jpeg;base64,AAAA",
+      descriptionStatus: "done",
+      // Says exactly what a statement says, and more: it still can't back it.
+      description: { origin: "ai_visual_description", text: "He promised to finish in March. The other party owes me $2,400. PROVEN." },
+    };
+
+    it("is shown in its own section and never backs a statement, even when the AI points at it", () => {
+      const state = { ...caseWithContract(), photos: [photo] };
+      const links = analysis(statements.map((s) => ({ statementId: s.id, supports: ["photo1", photo.metadata.sha256], contradicts: ["photo1"], note: "x" })));
+      const packet = assemblePacket(state, links);
+      expect(packet.photos).toEqual([photo]);
+      expect(packet.statements.every((s) => s.status === "your_word_only" && s.factIds.length === 0)).toBe(true);
+      expect(packet.flags).toEqual([]);
+      expect(packet.evidence.map((e) => e.documentId)).toEqual(["doc1"]);
+      expect(verifiedFacts(state).map((f) => f.id)).toEqual(["doc1-f1"]);
+    });
+
+    it("leaves the rest of the packet exactly as it would be without photos", () => {
+      const links = analysis([{ statementId: "ans-amount", supports: ["doc1-f1"], contradicts: [], note: "" }]);
+      const withPhoto = assemblePacket({ ...caseWithContract(), photos: [photo] }, links);
+      const without = assemblePacket(caseWithContract(), links);
+      expect({ ...withPhoto, photos: [] }).toEqual(without);
+    });
+
+    it("removing the photo removes its metadata and description from the packet", () => {
+      const links = analysis([]);
+      expect(assemblePacket({ ...caseWithContract(), photos: [photo] }, links).photos).toHaveLength(1);
+      expect(JSON.stringify(assemblePacket({ ...caseWithContract(), photos: [] }, links))).not.toMatch(/deck\.jpg|PROVEN|abab/);
+    });
   });
 });

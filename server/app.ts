@@ -2,7 +2,8 @@ import express, { type ErrorRequestHandler } from "express";
 import type { AiClient } from "./ai/client.ts";
 import { AnalyzeRequest, analyzeCase } from "./ai/analyze.ts";
 import { ExtractRequest, extractFacts } from "./ai/extractFacts.ts";
-import { uploadRouter } from "./upload.ts";
+import { describePhoto } from "./ai/describePhoto.ts";
+import { receiveFile, uploadRouter } from "./upload.ts";
 
 export function createApp({ ai }: { ai: AiClient }) {
   const app = express();
@@ -13,6 +14,17 @@ export function createApp({ ai }: { ai: AiClient }) {
   });
 
   app.use(uploadRouter());
+
+  app.post("/api/photos/describe", async (req, res) => {
+    const file = await receiveFile(req, res);
+    if (!file) return;
+    const result = await describePhoto(ai, file.filename, file.data);
+    if (!result.ok) {
+      res.status(result.status).json({ error: result.error });
+      return;
+    }
+    res.json({ description: result.description, sha256: result.sha256 });
+  });
 
   app.post("/api/extract", async (req, res) => {
     const parsed = ExtractRequest.safeParse(req.body);

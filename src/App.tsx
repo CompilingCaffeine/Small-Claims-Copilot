@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ConfirmDialog } from "./components/ConfirmDialog.tsx";
 import { Notice } from "./components/Notice.tsx";
-import { demoReplay } from "./demo/demoReplay.ts";
+import { demoPhotoDescription, demoReplay } from "./demo/demoReplay.ts";
 import { generatePacket } from "./generate.ts";
 import { useCases, type Tab } from "./state/caseStore.ts";
 import { DescribeStep } from "./steps/DescribeStep.tsx";
@@ -104,7 +104,13 @@ export default function App() {
 
       {step === 0 && <DescribeStep state={state} update={update} onNext={() => setStep(1)} />}
       {step === 1 && (
-        <EvidenceStep state={state} update={update} generating={generating === tab} onGenerate={onGenerate} />
+        <EvidenceStep
+          state={state}
+          update={update}
+          generating={generating === tab}
+          onGenerate={onGenerate}
+          savedPhotoDescription={tab === "demo" ? demoPhotoDescription : undefined}
+        />
       )}
       {step === 2 && <ReviewStep state={state} update={update} />}
 

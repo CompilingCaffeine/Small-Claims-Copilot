@@ -55,6 +55,32 @@ export const DocumentFacts = z.object({
 });
 export type DocumentFacts = z.infer<typeof DocumentFacts>;
 
+// A photo is evidence of a different kind than a document: it has no quotable text,
+// so it never becomes a Fact and can never make a statement ✓ backed. What the app
+// knows about it comes from two clearly separated places.
+export const PhotoEvidence = z.object({
+  id: z.string(),
+  filename: z.string(),
+  // Read from the file by code. Identifies the file; it doesn't prove when or where
+  // anything happened (EXIF can be missing or edited). GPS is never read.
+  metadata: z.object({
+    origin: z.literal("technical_metadata"),
+    mimeType: z.enum(["image/jpeg", "image/png"]),
+    byteSize: z.number().int(),
+    width: z.number().int(),
+    height: z.number().int(),
+    sha256: z.string(),
+    capturedAt: z.string().optional(), // camera clock, time zone unknown
+  }),
+  // A small re-encoded preview (data: URL, no embedded metadata). The original file is
+  // kept only in memory for the current page session.
+  thumbnail: z.string(),
+  descriptionStatus: z.enum(["pending", "done", "failed"]),
+  description: z.object({ origin: z.literal("ai_visual_description"), text: z.string() }).optional(),
+  descriptionError: z.string().optional(),
+});
+export type PhotoEvidence = z.infer<typeof PhotoEvidence>;
+
 export const UserStatement = z.object({
   id: z.string(),
   origin: z.enum(["answer", "description"]),
@@ -150,6 +176,7 @@ export const Packet = z.object({
   timeline: z.array(TimelineEvent),
   undated: z.array(TimelineEvent),
   evidence: z.array(EvidenceRow),
+  photos: z.array(PhotoEvidence), // separate from text evidence; never referenced by statements
   summary: z.object({ text: z.string(), origin: z.literal("ai"), edited: z.boolean() }),
   amountClaimedCents: z.number().int().nullable(), // null = unknown, never guessed
   droppedFactCount: z.number().int(),
@@ -160,6 +187,7 @@ export const CaseState = z.object({
   schemaVersion: z.literal(1),
   input: CaseInput,
   documents: z.array(SourceDocument),
+  photos: z.array(PhotoEvidence).default([]), // cases saved before photos existed load with none
   facts: z.record(z.string(), DocumentFacts),
   // Claude's validated answer. The packet itself is rebuilt from this plus the current
   // documents on every render, so removing a document immediately removes its backing.
@@ -176,6 +204,7 @@ export function emptyCase(): CaseState {
     schemaVersion: 1,
     input: { description: "", amountOwed: "", overdue: "", saidWontPay: "", knowsLocation: "" },
     documents: [],
+    photos: [],
     facts: {},
     analysis: null,
     edits: {},

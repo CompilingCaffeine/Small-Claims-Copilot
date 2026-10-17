@@ -8,6 +8,7 @@ import { Differences } from "../packet/Differences.tsx";
 import { EvidenceList } from "../packet/EvidenceList.tsx";
 import { KeyFlags } from "../packet/KeyFlags.tsx";
 import { NextSteps } from "../packet/NextSteps.tsx";
+import { Photos } from "../packet/Photos.tsx";
 import { Statements } from "../packet/Statements.tsx";
 import { Summary } from "../packet/Summary.tsx";
 import { Timeline } from "../packet/Timeline.tsx";
@@ -37,7 +38,8 @@ export function ReviewStep({ state, update }: { state: CaseState; update: Update
 
   const backed = packet.statements.filter((s) => s.status === "backed").length;
   const diffs = packet.documentDifferences.length;
-  const detailsSummary = `${backed} of ${packet.statements.length} statements backed · evidence list · ${diffs} difference${diffs === 1 ? "" : "s"} between documents · timeline`;
+  const photos = packet.photos.length;
+  const detailsSummary = `${backed} of ${packet.statements.length} statements backed · evidence list${photos ? ` · ${photos} photo${photos === 1 ? "" : "s"}` : ""} · ${diffs} difference${diffs === 1 ? "" : "s"} between documents · timeline`;
 
   return (
     <div>
@@ -71,6 +73,7 @@ export function ReviewStep({ state, update }: { state: CaseState; update: Update
       <Details summary={detailsSummary}>
         <Statements packet={packet} factsById={factsById} state={state} setEdit={setEdit} />
         <EvidenceList packet={packet} />
+        <Photos packet={packet} />
         <Differences packet={packet} factsById={factsById} documents={state.documents} />
         <Timeline packet={packet} factsById={factsById} documents={state.documents} />
       </Details>

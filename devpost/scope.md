@@ -34,6 +34,7 @@ You open the app, type a two-sentence description of the fictional contractor di
 - The demo case replays saved AI results, so trying it is instant and free; API calls are spent only on the user's own case.
 - "Why it matters" explains the effect on organizing the case (e.g. "the amount you claim depends on which figure is right"). It never predicts outcomes. Any California law or procedure reference is a **hand-picked link to an official California Courts page with a last-checked date**, never AI-generated legal citations.
 - Clear-case button; not-legal-advice notice; documents treated as untrusted data.
+- **Photo evidence (experimental, added after the final review):** JPEG/PNG photos get technical metadata read from the file (type, size, dimensions, SHA-256, capture time if present; never GPS) and one labeled *AI visual description — review before using*. Photos sit in their own section and can never make a statement ✓ backed.
 
 ## Later
 - Serving the other party: a service plan/checklist linked to official sources (the learner's own sticking point).
@@ -44,4 +45,5 @@ You open the app, type a two-sentence description of the fictional contractor di
 - Filing forms, arranging service, contacting the other party: real-world legal actions, far beyond a 2–4 hour proof of concept, and risky to automate.
 - Legal advice, outcome predictions, or deciding who's right: the app is an organizer, and pretending otherwise could hurt the people it's meant to help.
 - AI-generated legal citations or rules: unverifiable and easy to hallucinate.
+- Beyond the narrow photo slice: HEIC, OCR, image forensics or authenticity checks, video, GPS/location mapping, and scanned-PDF support. Each is its own project, and location data is a privacy risk.
 - Accounts, database, deployment: not needed to prove the kernel.

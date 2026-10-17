@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { Analysis, DocumentFacts, type CaseState } from "../../shared/schemas.ts";
 import { demoFingerprint } from "./demoCase.ts";
+import savedPhoto from "./demoPhoto.json";
 import saved from "./demoResults.json";
 
 export const DemoRecording = z.object({
@@ -21,4 +22,12 @@ export function demoReplay(
   const parsed = DemoRecording.safeParse(recording);
   if (!parsed.success || parsed.data.fingerprint !== demoFingerprint(state)) return null;
   return { facts: structuredClone(parsed.data.facts), analysis: structuredClone(parsed.data.analysis) };
+}
+
+const DemoPhotoRecording = z.object({ filename: z.string(), sha256: z.string(), description: z.string(), recordedAt: z.string() });
+
+/** The recorded description of demo-files/deck-photo.jpg, matched by its exact bytes (SHA-256). */
+export function demoPhotoDescription(sha256: string, recording: unknown = savedPhoto): string | null {
+  const parsed = DemoPhotoRecording.safeParse(recording);
+  return parsed.success && parsed.data.sha256 === sha256 ? parsed.data.description : null;
 }

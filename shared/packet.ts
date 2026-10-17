@@ -27,7 +27,7 @@ export function verifiedFacts(state: Pick<CaseState, "documents" | "facts">): Fa
 
 /** Rebuilds the packet from the stored analysis and current documents, with the user's edits applied. */
 export function assemblePacket(
-  state: Pick<CaseState, "input" | "documents" | "facts"> & Partial<Pick<CaseState, "edits">>,
+  state: Pick<CaseState, "input" | "documents" | "facts"> & Partial<Pick<CaseState, "edits" | "photos">>,
   analysis: Analysis,
 ): Packet {
   const facts = verifiedFacts(state);
@@ -73,6 +73,8 @@ export function assemblePacket(
     statements,
     ...buildTimeline(facts),
     evidence,
+    // Passed through as their own section. Nothing above reads them, so a photo can't back anything.
+    photos: state.photos ?? [],
     summary: { text: analysis.summary, origin: "ai", edited: false },
     amountClaimedCents: parseAmountToCents(state.input.amountOwed),
     droppedFactCount: Object.values(state.facts).reduce((n, f) => n + f.droppedCount, 0),

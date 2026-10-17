@@ -1,23 +1,27 @@
 import { useRef, useState, type DragEvent } from "react";
 import { ACCEPTED_EXTENSIONS, MAX_DOCUMENTS, MAX_FILE_BYTES, MAX_PASTE_CHARS } from "../../shared/limits.ts";
 import { formatFactValue } from "../../shared/normalize.ts";
-import type { CaseState, SourceDocument } from "../../shared/schemas.ts";
+import type { CaseState, PhotoEvidence, SourceDocument } from "../../shared/schemas.ts";
 import { backingPrompts } from "../../shared/statements.ts";
-import { uploadDocument } from "../api.ts";
+import { describePhoto, uploadDocument } from "../api.ts";
+import { PhotoCard } from "../components/PhotoCard.tsx";
 import { SourceExcerpt } from "../components/SourceExcerpt.tsx";
 import { cannotGenerateReason, extractDocument, type Update } from "../generate.ts";
+import { forgetOriginal, keepOriginal, makePreview, originalFor } from "../photos.ts";
 
 type Props = {
   state: CaseState;
   update: Update;
   generating: boolean;
   onGenerate: () => void;
+  /** A recorded description for a known photo (the demo's), so describing it costs nothing. */
+  savedPhotoDescription?: (sha256: string) => string | null;
 };
 
 /** A file on its way in, or one that was turned away. Not saved: it never became a document. */
 type Upload = { key: string; file: File; status: "uploading" | "failed"; error?: string };
 
-export function EvidenceStep({ state, update, generating, onGenerate }: Props) {
+export function EvidenceStep({ state, update, generating, onGenerate, savedPhotoDescription }: Props) {
   const [pasteName, setPasteName] = useState("");
   const [pasteText, setPasteText] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -30,7 +34,8 @@ export function EvidenceStep({ state, update, generating, onGenerate }: Props) {
 
   function addFiles(files: File[]) {
     // Count slots here: several files can be dropped before any finishes uploading.
-    let slots = MAX_DOCUMENTS - state.documents.length - uploads.filter((u) => u.status === "uploading").length;
+    let slots =
+      MAX_DOCUMENTS - state.documents.length - state.photos.length - uploads.filter((u) => u.status === "uploading").length;
     const added: Upload[] = files.map((file) => {
       const key = newId();
       const error = checkFile(file) ?? (slots-- <= 0 ? `You can add up to ${MAX_DOCUMENTS} documents.` : undefined);
@@ -43,12 +48,51 @@ export function EvidenceStep({ state, update, generating, onGenerate }: Props) {
   async function send(key: string, file: File) {
     setUpload(key, { status: "uploading", error: undefined });
     try {
-      const doc = await uploadDocument(file);
-      update((s) => ({ ...s, documents: [...s.documents, { id: newId(), status: "ready", ...doc }] }));
-      setUpload(key, null);
+      const uploaded = await uploadDocument(file);
+      if (uploaded.kind === "image") {
+        const photo: PhotoEvidence = {
+          id: newId(),
+          filename: uploaded.filename,
+          metadata: { origin: "technical_metadata", ...uploaded.image },
+          thumbnail: await makePreview(file),
+          descriptionStatus: "pending",
+        };
+        keepOriginal(photo.id, file);
+        update((s) => ({ ...s, photos: [...s.photos, photo] }));
+        setUpload(key, null);
+        void describe(photo, file);
+      } else {
+        const { kind, filename, pages } = uploaded;
+        update((s) => ({ ...s, documents: [...s.documents, { id: newId(), status: "ready", kind, filename, pages }] }));
+        setUpload(key, null);
+      }
     } catch (err) {
       setUpload(key, { status: "failed", error: err instanceof Error ? err.message : "Upload failed." });
     }
+  }
+
+  /** A failed description leaves the photo and its metadata in place, with Retry. */
+  async function describe(photo: PhotoEvidence, file: File) {
+    const setPhoto = (change: Partial<PhotoEvidence>) =>
+      update((s) => ({ ...s, photos: s.photos.map((p) => (p.id === photo.id ? { ...p, ...change } : p)) }));
+    setPhoto({ descriptionStatus: "pending", descriptionError: undefined });
+    const saved = savedPhotoDescription?.(photo.metadata.sha256);
+    if (saved) {
+      setPhoto({ descriptionStatus: "done", description: { origin: "ai_visual_description", text: saved } });
+      return;
+    }
+    try {
+      const result = await describePhoto(file);
+      if (result.sha256 !== photo.metadata.sha256) throw new Error("The file changed after it was added. Remove it and add it again.");
+      setPhoto({ descriptionStatus: "done", description: { origin: "ai_visual_description", text: result.description } });
+    } catch (err) {
+      setPhoto({ descriptionStatus: "failed", descriptionError: err instanceof Error ? err.message : "The description failed." });
+    }
+  }
+
+  function removePhoto(id: string) {
+    forgetOriginal(id);
+    update((s) => ({ ...s, photos: s.photos.filter((p) => p.id !== id) }));
   }
 
   function onDrop(e: DragEvent) {
@@ -95,9 +139,10 @@ export function EvidenceStep({ state, update, generating, onGenerate }: Props) {
     <section className="panel">
       <h2>Add evidence</h2>
       <p className="lede">
-        Add the documents behind your case: a contract, an invoice, a text thread. Upload .txt or .pdf files (up to{" "}
-        {MAX_DOCUMENTS}, 2 MB each) or paste text. Their text is sent to an AI service (Claude) to pull out facts, so use
-        only fictional documents for the demo.
+        Add the documents behind your case: a contract, an invoice, a text thread. Upload .txt or .pdf files, or paste
+        text; you can also add .jpg or .png photos (experimental). Up to {MAX_DOCUMENTS} files, 2 MB each. Document text
+        and photos (with their embedded metadata removed) are sent to an AI service (Claude), so use only fictional
+        material for the demo.
       </p>
 
       <div className="card" style={{ background: "var(--bg)", marginBottom: 20 }}>
@@ -120,7 +165,7 @@ export function EvidenceStep({ state, update, generating, onGenerate }: Props) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
       >
-        <div>Drop .txt or .pdf files here</div>
+        <div>Drop .txt, .pdf, .jpg, or .png files here</div>
         <button type="button" className="btn" onClick={() => picker.current?.click()}>
           Choose files
         </button>
@@ -158,8 +203,10 @@ export function EvidenceStep({ state, update, generating, onGenerate }: Props) {
         </div>
       </details>
 
-      <h3>Your documents ({state.documents.length})</h3>
-      {state.documents.length === 0 && uploads.length === 0 && <p className="muted small">No documents yet.</p>}
+      <h3>Your documents ({state.documents.length + state.photos.length})</h3>
+      {state.documents.length === 0 && state.photos.length === 0 && uploads.length === 0 && (
+        <p className="muted small">No documents yet.</p>
+      )}
       <div className="stack">
         {uploads.map((u) => (
           <div key={u.key} className="card">
@@ -195,6 +242,17 @@ export function EvidenceStep({ state, update, generating, onGenerate }: Props) {
             state={state}
             onRetry={() => extractDocument(doc, update)}
             onRemove={() => removeDocument(doc.id)}
+          />
+        ))}
+        {state.photos.map((photo) => (
+          <PhotoCard
+            key={photo.id}
+            photo={photo}
+            onRemove={() => removePhoto(photo.id)}
+            onRetry={() => {
+              const file = originalFor(photo.id);
+              if (file) void describe(photo, file);
+            }}
           />
         ))}
       </div>
@@ -282,7 +340,8 @@ function DocumentCard({
 /** The same checks the server makes, so obvious problems never leave the browser. */
 function checkFile(file: File): string | null {
   const ext = file.name.toLowerCase().match(/\.[a-z0-9]+$/)?.[0] ?? "";
-  if (!(ACCEPTED_EXTENSIONS as readonly string[]).includes(ext)) return `${file.name}: only .txt and .pdf files are supported.`;
+  if (!(ACCEPTED_EXTENSIONS as readonly string[]).includes(ext))
+    return `${file.name}: only .txt, .pdf, .jpg, and .png files are supported.`;
   if (file.size > MAX_FILE_BYTES) return `${file.name} is larger than 2 MB.`;
   if (file.size === 0) return `${file.name} is empty.`;
   return null;

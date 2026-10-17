@@ -102,6 +102,10 @@ PRD ref: `prd.md > Add evidence`.
 `server/upload.ts`, `POST /api/documents`. multer memory storage, `limits.fileSize = 2 MB`, one file per request. Accepts only `.txt` (decoded as UTF-8) and `.pdf` (must start with `%PDF-`; text via unpdf `extractText(..., { mergePages: false })`). A PDF with no text → 422 "no readable text (scanned PDFs aren't supported)." Never executes or stores files; responds `{ filename, kind, pages: string[] }`.
 PRD ref: `prd.md > Add evidence`.
 
+### Photo evidence (experimental)
+`server/image.ts` reads JPEG/PNG headers by hand (no image library): type from the bytes, pixel size, SHA-256 of the original bytes, and EXIF `DateTimeOriginal` only (IFD0 → Exif IFD → 0x9003; the GPS IFD is never followed). `stripMetadata()` drops JPEG APP1/APP3–APP13/APP15 (EXIF, XMP) and comments, and PNG `eXIf`/`tEXt`/`zTXt`/`iTXt`/`tIME` chunks. `POST /api/documents` returns `{ kind: "image", image: {...} }` for photos; `POST /api/photos/describe` (`server/ai/describePhoto.ts`) sends the stripped copy as a base64 image block with `DESCRIBE_PHOTO_SYSTEM` and validates `{ description }` (≤ 400 chars). The browser keeps a ≤ 480 px canvas re-encoded preview in the case (`src/photos.ts`); the original stays in memory for the session only ("Open original", Retry). `src/components/PhotoCard.tsx` shows the two labeled parts; `src/packet/Photos.tsx` is the packet section. Demo: `demo-files/deck-photo.jpg` (synthetic drawing, capture time 2026-03-13 09:20) with its description recorded in `src/demo/demoPhoto.json` by `npm run record-demo-photo`, matched by SHA-256.
+PRD ref: `prd.md > Photo evidence (experimental)`.
+
 ### Fact extraction
 `server/ai/extractFacts.ts`, `POST /api/extract`. One Claude call per document via `messages.parse` with a Zod output format. Document text is wrapped in `<document id="…" filename="…">` with `<page n="…">` markers; the system prompt (`server/ai/prompts.ts`) says document content is untrusted data, never instructions, and to return only facts it can quote. Then **excerpt verification** (`shared/excerpt.ts`) runs on every fact, followed by value normalization (`shared/normalize.ts`). Response: `{ facts: Fact[], droppedCount }`.
 PRD ref: `prd.md > Generate packet`.
@@ -137,33 +141,41 @@ CaseState {
   schemaVersion: 1
   input: { description: string; amountOwed: string; overdue: string;
            saidWontPay: "yes"|"no"|"not_sure"|""; knowsLocation: "yes"|"no"|"not_sure"|"" }
-  documents: SourceDocument[]          // max 10
+  documents: SourceDocument[]          // documents + photos ≤ 10
+  photos: PhotoEvidence[]              // default [] so older saved cases load
   facts: Record<docId, { status: "pending"|"done"|"failed"; facts: Fact[]; droppedCount: number; error?: string }>
-  packet: Packet | null
-  edits: Record<itemId, string>
+  analysis: Analysis | null            // Claude's validated answer; the packet is rebuilt from it on every render
+  edits: Record<editKey, string>       // "summary", "statement:<id>", "step-note:<id>"
   generatedAt: string | null
 }
 SourceDocument { id; filename; kind: "txt"|"pdf"|"pasted"; pages: string[]; status: "ready"|"failed"; error? }
 Fact { id; documentId; category: "party"|"date"|"amount"|"promise"|"payment"|"event"|"other";
-       subject: string /* snake_case, e.g. total_price */; 
+       subject: string /* snake_case, e.g. total_price */;
        value: { type:"date"; iso } | { type:"amount"; cents } | { type:"text"; text };
-       eventDate?: string /* ISO, if the fact happened on a date */;
+       eventDate?: string /* ISO, only if written in the excerpt */;
        originalWording; excerpt; page /* computed by code */ }
+PhotoEvidence { id; filename;
+       metadata: { origin: "technical_metadata"; mimeType: "image/jpeg"|"image/png"; byteSize; width; height;
+                   sha256; capturedAt? /* camera clock */ };
+       thumbnail /* data: URL, no metadata */; descriptionStatus: "pending"|"done"|"failed";
+       description?: { origin: "ai_visual_description"; text }; descriptionError? }   // no excerpt, never a Fact
 UserStatement { id; origin: "answer"|"description"; text; quote? }
-Packet { needsAttention: { conflicts: Conflict[]; gaps: Gap[] }; followUps: FollowUp[];
-         statements: { statement: UserStatement; status: "backed"|"your_word_only"; factIds: string[] }[];
-         timeline: TimelineEvent[]; undated: TimelineEvent[]; evidence: EvidenceRow[];
-         summary: { text; origin: "ai" }; droppedFactCount: number }
-Conflict { id; basis: "checked"|"ai_interpretation"; subject; sides: { label; value; factId?; statementId? }[] }
-FollowUp { id; question; whyItMatters; origin: "rule"|"ai"; link?: { title; url; lastChecked } }
+Packet { flags: Flag[]; nextSteps: NextStep[]; documentDifferences: Conflict[];
+         statements: { statement; status: "backed"|"your_word_only"; factIds; contradictingFactIds; originalText? }[];
+         timeline: TimelineEvent[]; undated: TimelineEvent[]; evidence: EvidenceRow[]; photos: PhotoEvidence[];
+         summary: { text; origin: "ai"; edited }; amountClaimedCents: number|null; droppedFactCount }
+Flag { id; basis: "checked"|"ai_interpretation"; statement: UserStatement; factIds; note? }
+NextStep { id; action; whyItMatters; origin: "rule"|"ai"; link?: { title; url; lastChecked }; note? }
+Conflict { id; basis: "checked"|"ai_interpretation"; subject; note?; sides: { label; value; factId? }[] }
 ```
 
-The four kinds of information the handoff requires stay distinct: **your statements** (`UserStatement`), **document facts** (`Fact`, always with excerpt + page), **AI interpretations** (summary, `ai_interpretation` conflicts, AI follow-ups, all labeled), **unknown** (missing values render as "unknown," never filled).
+The kinds of information stay distinct: **your statements** (`UserStatement`), **document facts** (`Fact`, always with excerpt + page), **AI interpretations** (summary, `ai_interpretation` flags and differences, AI next steps), **photo evidence** (file-read `technical_metadata` and a labeled `ai_visual_description`, never a fact), and **unknown** (missing values render as "unknown," never filled).
 
 | Data | Lives in | Updated by | When you leave and return |
 |---|---|---|---|
-| Case input, documents (text), facts, packet, edits | localStorage, `scc:case:my` / `scc:case:demo` | every change in the UI | restored as-is |
-| Uploaded file bytes | server memory, one request only | upload | gone immediately (only extracted text is kept, in the browser) |
+| Case input, documents (text), facts, analysis, edits, photo metadata + descriptions + small previews | localStorage, `scc:case:my` / `scc:case:demo:v2` | every change in the UI | restored as-is |
+| Uploaded file bytes | server memory, one request only | upload / describe | gone immediately (only extracted text, or a photo's metadata and preview, is kept in the browser) |
+| Original photo file | browser memory, current page session | adding the photo | gone (preview, metadata, and description remain; Retry needs the photo added again) |
 | API key | `.env` on the server | you | never sent to the browser |
 | Official links | `shared/officialLinks.ts` (code) | developer, with last-checked date | n/a |
 
@@ -192,12 +204,14 @@ Small-Claims-Copilot/
 │   └── packet.ts              # assemblePacket(): the referee
 ├── server/
 │   ├── index.ts               # Express app, routes, JSON error handler
-│   ├── upload.ts              # POST /api/documents: checks + txt/pdf → pages
+│   ├── upload.ts              # POST /api/documents: checks + txt/pdf → pages, photo → metadata
+│   ├── image.ts               # JPEG/PNG header reader, SHA-256, EXIF capture time (no GPS), metadata stripping
 │   └── ai/
 │       ├── client.ts          # Anthropic client + AiClient interface (tests inject a fake)
 │       ├── prompts.ts         # system prompts incl. untrusted-document rule
 │       ├── extractFacts.ts    # POST /api/extract: Claude → Zod → excerpt verification
-│       └── analyze.ts         # POST /api/analyze: Claude → Zod → reference validation
+│       ├── analyze.ts         # POST /api/analyze: Claude → Zod → reference validation
+│       └── describePhoto.ts   # POST /api/photos/describe: stripped photo → one labeled description
 ├── src/
 │   ├── main.tsx
 │   ├── App.tsx                # shell: notice, tabs, stepper, clear case
@@ -211,6 +225,7 @@ Small-Claims-Copilot/
 │   ├── steps/                 # DescribeStep, EvidenceStep, ReviewStep
 │   └── packet/                # KeyFlags, NextSteps, Details, Statements, Differences, Timeline, EvidenceList, Summary, Editable
 ├── scripts/record-demo.ts     # runs the real API once on the demo and saves demoResults.json
+├── scripts/record-demo-photo.ts # describes demo-files/deck-photo.jpg once → src/demo/demoPhoto.json
 ├── demo-files/                # the demo's synthetic documents as real files (.txt + one .pdf) for live upload
 ├── tests/
 │   ├── fixtures/              # synthetic docs, injection doc, fake AI outputs (valid + malformed)
@@ -230,7 +245,8 @@ Small-Claims-Copilot/
 - **Refusal fallback:** the API's server-side `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`) is recommended for Opus 5.5. **Verify early in the build** that it works with `messages.parse`; if not, skip it, since a refusal is already handled as a failed step.
 - **Retries/timeouts:** SDK defaults (2 retries on 429/5xx).
 - **Docs:** https://docs.claude.com/en/docs/build-with-claude/structured-outputs · https://docs.claude.com/en/api/messages
-- **Cost:** a full 4-document case (4 extractions + 1 analysis) cost ≈ $0.60 on the learner's bill. The demo replays a saved recording, so it costs nothing to try.
+- **Cost:** a full 4-document case (4 extractions + 1 analysis) cost ≈ $0.60 on the learner's bill. The demo replays a saved recording, so it costs nothing to try. A photo description is ≈ 1.4–2k input / 70 output tokens (about a cent).
+- **Vision:** `describePhoto` sends `[{ type: "image", source: { type: "base64", media_type, data } }, { type: "text" }]` through the same `AiClient.parse` (optional `image` on the request).
 
 ### California Courts self-help (links only, no API)
 Hand-picked pages in `shared/officialLinks.ts`, each `{ topic, title, url, lastChecked }`, starting from https://selfhelp.courts.ca.gov/small-claims. Exact URLs for where to file, serving, and claim limits are **to be verified during the build** and dated on the day they're checked.
@@ -238,6 +254,7 @@ Hand-picked pages in `shared/officialLinks.ts`, each `{ topic, title, url, lastC
 ## Important Failure Modes
 - **A Claude call fails, is malformed, or refuses** → extraction: that document shows *failed* with Retry/Remove, and the rest of the packet still generates. Analysis: an error banner, inputs and any previous packet kept, and nothing unverified ever shown as backed.
 - **PDF has no text (scanned) or the file is wrong type/too big/11th document** → clear inline message on that file; nothing uploaded or crashed.
+- **Photo is malformed, renamed, or over 8000 px; or its description fails or is refused** → a rejected file shows "✕ not added" with the reason; a failed description leaves the photo and its metadata in place with Retry (while the original is in memory). The packet is unaffected either way.
 - **localStorage full or blocked** → banner: "Couldn't save. Your case works until you close this tab." The app keeps working in memory.
 - **Slow AI** → per-document "Reading contract.txt…" status and a disabled Generate button while it runs.
 
@@ -249,6 +266,8 @@ Hand-picked pages in `shared/officialLinks.ts`, each `{ topic, title, url, lastC
 - **Curated official links** instead of AI-generated legal information, because they can be verified (`scope.md > Explicitly Cut`).
 - **No streaming UI.** Calls are short; a per-document status is enough.
 - **No deployment.** Local plus recording satisfies the submission.
+- **Hand-written image header reader** instead of an EXIF library: it needs only dimensions and one date tag, never touches GPS, and adds no dependency.
+- **Photo originals aren't persisted.** A 2 MB image is ~2.7 MB as base64, too much for localStorage; a small preview is stored instead.
 
 ## Decisions and Open Issues
 

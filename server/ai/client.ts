@@ -10,6 +10,7 @@ export interface AiRequest<S extends z.ZodType> {
   system: string;
   user: string;
   schema: S;
+  image?: { mediaType: "image/jpeg" | "image/png"; base64: string }; // sent before the text
 }
 
 /** The only way server code talks to Claude. Tests inject a fake that returns canned output. */
@@ -28,7 +29,7 @@ export function createAnthropicClient(apiKey = process.env.ANTHROPIC_API_KEY): A
   const client = new Anthropic({ apiKey });
 
   return {
-    async parse({ system, user, schema }) {
+    async parse({ system, user, schema, image }) {
       try {
         const response = await client.beta.messages.parse({
           model: MODEL,
@@ -37,7 +38,17 @@ export function createAnthropicClient(apiKey = process.env.ANTHROPIC_API_KEY): A
           fallbacks: "default",
           output_config: { effort: "medium", format: betaZodOutputFormat(schema) },
           system,
-          messages: [{ role: "user", content: user }],
+          messages: [
+            {
+              role: "user",
+              content: image
+                ? [
+                    { type: "image", source: { type: "base64", media_type: image.mediaType, data: image.base64 } },
+                    { type: "text", text: user },
+                  ]
+                : user,
+            },
+          ],
         });
         const u = response.usage;
         console.log(

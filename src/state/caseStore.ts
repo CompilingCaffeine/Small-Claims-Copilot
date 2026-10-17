@@ -37,7 +37,13 @@ export function loadCase(storage: Storage | undefined, tab: Tab): { state: CaseS
   }
   // A document that was mid-extraction when the page closed is just unread now.
   const facts = Object.fromEntries(Object.entries(parsed.data.facts).filter(([, f]) => f.status !== "pending"));
-  return { state: { ...parsed.data, facts } };
+  // A photo description can't resume: the original file isn't kept across page loads.
+  const photos = parsed.data.photos.map((p) =>
+    p.descriptionStatus === "pending"
+      ? { ...p, descriptionStatus: "failed" as const, descriptionError: "Interrupted when the page closed. Add the photo again to describe it." }
+      : p,
+  );
+  return { state: { ...parsed.data, facts, photos } };
 }
 
 export function saveCase(storage: Storage | undefined, tab: Tab, state: CaseState): boolean {
