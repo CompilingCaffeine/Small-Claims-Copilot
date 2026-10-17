@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { EDIT_KEYS } from "../../shared/edits.ts";
 import { assemblePacket, verifiedFacts } from "../../shared/packet.ts";
 import { emptyCase, type Analysis, type CaseState, type Fact } from "../../shared/schemas.ts";
 
@@ -103,5 +104,37 @@ describe("assemblePacket", () => {
     const step = (action: string) => ({ action, whyItMatters: "x", topic: "evidence_prep" as const });
     const steps = assemblePacket(state, { ...analysis([]), nextSteps: [step("Find A."), step("Find B.")] }).nextSteps;
     expect(steps.map((s) => !!s.link)).toEqual([true, false, false]);
+  });
+
+  it("lists each document with its verified facts and the statements it backs", () => {
+    const packet = assemblePacket(caseWithContract(), analysis([{ statementId: "ans-amount", supports: ["doc1-f1"], contradicts: [], note: "" }]));
+    expect(packet.evidence).toEqual([{ documentId: "doc1", filename: "contract.txt", kind: "txt", factCount: 1, backs: ["ans-amount"] }]);
+  });
+
+  it("reapplies wording edits by ID after the packet is rebuilt, without changing status", () => {
+    const state = {
+      ...caseWithContract(),
+      edits: {
+        [EDIT_KEYS.statement("desc-a")]: "He promised in writing to finish by March 6.",
+        [EDIT_KEYS.summary]: "My own summary.",
+        [EDIT_KEYS.stepNote("step-unbacked")]: "Asked my bank for the check image.",
+        [EDIT_KEYS.statement("gone")]: "An edit for a statement that no longer exists.",
+      },
+    };
+    const links = analysis([{ statementId: "ans-amount", supports: ["doc1-f1"], contradicts: [], note: "" }]);
+    for (const packet of [assemblePacket(state, links), assemblePacket(state, structuredClone(links))]) {
+      const edited = packet.statements.find((s) => s.statement.id === "desc-a")!;
+      expect(edited).toMatchObject({ status: "your_word_only", originalText: "He promised to finish in March." });
+      expect(edited.statement.text).toBe("He promised in writing to finish by March 6.");
+      expect(packet.summary).toEqual({ text: "My own summary.", origin: "ai", edited: true });
+      expect(packet.nextSteps.find((s) => s.id === "step-unbacked")?.note).toBe("Asked my bank for the check image.");
+      expect(packet.statements).toHaveLength(2);
+    }
+  });
+
+  it("shows an amount claimed that isn't a clear dollar figure as unknown", () => {
+    const state = caseWithContract();
+    expect(assemblePacket({ ...state, input: { ...state.input, amountOwed: "$2,400" } }, analysis([])).amountClaimedCents).toBe(240000);
+    expect(assemblePacket({ ...state, input: { ...state.input, amountOwed: "a few hundred" } }, analysis([])).amountClaimedCents).toBeNull();
   });
 });

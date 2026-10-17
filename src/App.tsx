@@ -106,7 +106,7 @@ export default function App() {
       {step === 1 && (
         <EvidenceStep state={state} update={update} generating={generating === tab} onGenerate={onGenerate} />
       )}
-      {step === 2 && <ReviewStep state={state} />}
+      {step === 2 && <ReviewStep state={state} update={update} />}
 
       <ConfirmDialog
         open={confirming}

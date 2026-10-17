@@ -61,7 +61,7 @@ Model: **Claude Opus 5.5** (`claude-opus-5-5`), learner accepted. $4 / $20 per m
   ```
   Open http://localhost:5173.
 - **Tests:** `npm test` (no network, no key needed; AI is faked). Optional `npm run test:live` runs the prompt-injection fixture against the real API.
-- **Demo recording (1–3 min):** open **Demo case** → show Describe answers → Add evidence (show the PDF and status) → Generate → conflict at top ($2,400 vs $2,800) → click a ✓ backed statement to show its excerpt and page → location gap with official link → print preview. Optionally upload `demo-files/` into My case to show live upload.
+- **Demo recording (1–3 min):** open **Demo case** → show Describe answers → Add evidence → Generate (instant replay) → key flags at top (location "no" vs. the invoice address; $500 vs. $600 deposit) → next steps with "Additional info" → open Packet details and click a ✓ backed statement to show its excerpt and page → print preview. Optionally upload `demo-files/` into My case to show live upload.
 - **Submission:** short demo video + public GitHub repo. **Deployment: none chosen** (optional; can revisit in `6-ship`).
 
 ## Look and Feel

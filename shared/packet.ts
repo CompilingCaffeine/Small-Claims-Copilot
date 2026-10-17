@@ -2,12 +2,15 @@
 // here and nowhere else: a statement is ✓ backed only if it links to a fact whose
 // excerpt is confirmed to be in a document that's still part of the case.
 import { detectConflicts } from "./conflicts.ts";
+import { applyEdits } from "./edits.ts";
 import { findExcerpt } from "./excerpt.ts";
 import { detectFlags } from "./flags.ts";
 import { contentId } from "./ids.ts";
 import { leadingSteps, trailingSteps } from "./nextSteps.ts";
+import { parseAmountToCents } from "./normalize.ts";
 import { linkFor } from "./officialLinks.ts";
-import type { Analysis, CaseState, Fact, NextStep, Packet, StatementResult } from "./schemas.ts";
+import type { Analysis, CaseState, EvidenceRow, Fact, NextStep, Packet, StatementResult } from "./schemas.ts";
+import { buildTimeline } from "./timeline.ts";
 
 /** Facts that survive re-checking against the documents currently in the case. */
 export function verifiedFacts(state: Pick<CaseState, "documents" | "facts">): Fact[] {
@@ -22,7 +25,11 @@ export function verifiedFacts(state: Pick<CaseState, "documents" | "facts">): Fa
   return out;
 }
 
-export function assemblePacket(state: Pick<CaseState, "input" | "documents" | "facts">, analysis: Analysis): Packet {
+/** Rebuilds the packet from the stored analysis and current documents, with the user's edits applied. */
+export function assemblePacket(
+  state: Pick<CaseState, "input" | "documents" | "facts"> & Partial<Pick<CaseState, "edits">>,
+  analysis: Analysis,
+): Packet {
   const facts = verifiedFacts(state);
   const factsById = new Map(facts.map((f) => [f.id, f]));
 
@@ -49,17 +56,28 @@ export function assemblePacket(state: Pick<CaseState, "input" | "documents" | "f
     ...(linkFor(s.topic) ? { link: linkFor(s.topic) } : {}),
   }));
 
-  return {
+  const evidence: EvidenceRow[] = state.documents
+    .filter((d) => d.status === "ready")
+    .map((d) => ({
+      documentId: d.id,
+      filename: d.filename,
+      kind: d.kind,
+      factCount: facts.filter((f) => f.documentId === d.id).length,
+      backs: statements.filter((s) => s.factIds.some((id) => factsById.get(id)?.documentId === d.id)).map((s) => s.statement.id),
+    }));
+
+  const packet: Packet = {
     flags,
     nextSteps: linkOnce([...leadingSteps(context), ...aiSteps, ...trailingSteps(context)]),
     documentDifferences: detectConflicts({ facts, documents: state.documents }, analysis.conflicts),
     statements,
-    timeline: [],
-    undated: [],
-    evidence: [],
-    summary: { text: analysis.summary, origin: "ai" },
+    ...buildTimeline(facts),
+    evidence,
+    summary: { text: analysis.summary, origin: "ai", edited: false },
+    amountClaimedCents: parseAmountToCents(state.input.amountOwed),
     droppedFactCount: Object.values(state.facts).reduce((n, f) => n + f.droppedCount, 0),
   };
+  return applyEdits(packet, state.edits ?? {});
 }
 
 /** Each official page is linked from the first step that needs it, not repeated on every step. */

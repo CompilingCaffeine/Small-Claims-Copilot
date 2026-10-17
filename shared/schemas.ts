@@ -100,22 +100,25 @@ export const NextStep = z.object({
   whyItMatters: z.string(),
   origin: z.enum(["rule", "ai"]),
   link: OfficialLink.optional(),
+  note: z.string().optional(), // the user's own note, from edits
 });
 export type NextStep = z.infer<typeof NextStep>;
 
+// One event, possibly stated by several documents (same date and subject).
 export const TimelineEvent = z.object({
   id: z.string(),
   date: z.string().optional(),
   label: z.string(),
-  factId: z.string(),
+  factIds: z.array(z.string()),
 });
 export type TimelineEvent = z.infer<typeof TimelineEvent>;
 
 export const EvidenceRow = z.object({
   documentId: z.string(),
   filename: z.string(),
+  kind: z.enum(["txt", "pdf", "pasted"]),
   factCount: z.number().int(),
-  backs: z.array(z.string()),
+  backs: z.array(z.string()), // statement IDs this document backs
 });
 export type EvidenceRow = z.infer<typeof EvidenceRow>;
 
@@ -124,6 +127,7 @@ export const StatementResult = z.object({
   status: z.enum(["backed", "your_word_only"]),
   factIds: z.array(z.string()),
   contradictingFactIds: z.array(z.string()),
+  originalText: z.string().optional(), // set when the user edited the wording
 });
 export type StatementResult = z.infer<typeof StatementResult>;
 
@@ -146,7 +150,8 @@ export const Packet = z.object({
   timeline: z.array(TimelineEvent),
   undated: z.array(TimelineEvent),
   evidence: z.array(EvidenceRow),
-  summary: z.object({ text: z.string(), origin: z.literal("ai") }),
+  summary: z.object({ text: z.string(), origin: z.literal("ai"), edited: z.boolean() }),
+  amountClaimedCents: z.number().int().nullable(), // null = unknown, never guessed
   droppedFactCount: z.number().int(),
 });
 export type Packet = z.infer<typeof Packet>;

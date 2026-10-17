@@ -59,7 +59,7 @@ Build mode: fast (chosen by learner; pauses at the slice 3 checkpoint and final 
   Learner check: In My case, upload the files from `demo-files/`, including the PDF, and watch each one go from reading to ready. Try an image or a big file and read the message. Remove a document, regenerate, and confirm nothing from it remains in the packet.
   Commit: `Upload txt and pdf documents with limits and failure states`
 
-- [ ] **6. A complete packet you can edit and print**
+- [x] **6. A complete packet you can edit and print**
   Becomes usable: Review packet is complete: Key flags → Next steps → Packet details with Statements, Timeline (dated events sorted, undated listed as "date unknown"), Evidence list (each document and what it backs), Differences between documents, and Case summary (labeled AI interpretation). You can edit the summary, statement wording, and notes on next steps, and edits survive regenerating. Print gives a clean packet with no buttons, excerpts expanded, statuses written out, and the notice included. README covers setup, the demo, limitations, and data handling.
   Why now: These sections all build on facts and statements that already exist, so they're lower risk and best done last. Finishing here leaves the full core journey for final review.
   PRD ref: `prd.md > Review packet` (Timeline, Evidence list, Case summary), `prd.md > Editing`, `prd.md > Print`, `prd.md > The Core Journey` (step 7)
@@ -115,3 +115,7 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - A rejected or failed upload never becomes a saved document: it shows as "✕ not added" with the reason, Dismiss, and Retry (Retry only when the file passes the type/size checks). "Failed" with Retry/Remove still applies to documents whose extraction fails.
 - Paste moved under a collapsed "Or paste a document's text" so the drop zone leads; Generate waits while files are uploading.
 - `npm run test:live` loads `.env` itself and skips when there's no key; measured ≈ 22 s per run.
+- Timeline events group facts with the same date and subject (the agreement date in the contract and on the receipt shows once with both sources), so `TimelineEvent` holds `factIds` rather than one `factId`. "Date unknown" lists only events and payments, since undated promises and party names aren't events.
+- Edits are applied inside `assemblePacket()` (`shared/edits.ts`), so every view and the print use the edited wording; an edited statement keeps its status and shows "edited" with Undo. Next steps carry the user's own note instead of separate "follow-up answer" fields, since follow-up questions became next steps.
+- The packet carries `amountClaimedCents` (null → "unknown") for the printed header, which is where "unknown amounts shown as unknown" became visible.
+- Print uses light-theme tokens even when the screen is in dark mode, hides the excerpt toggles (the full excerpt prints instead), and writes out each "Additional info" link's URL.

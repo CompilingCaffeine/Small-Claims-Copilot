@@ -1,8 +1,11 @@
+import { EDIT_KEYS } from "../../shared/edits.ts";
 import { formatIsoDate } from "../../shared/normalize.ts";
 import type { Packet } from "../../shared/schemas.ts";
 import { StatusTag } from "../components/StatusTag.tsx";
+import type { SetEdit } from "../steps/ReviewStep.tsx";
+import { Editable } from "./Editable.tsx";
 
-export function NextSteps({ packet }: { packet: Packet }) {
+export function NextSteps({ packet, setEdit }: { packet: Packet; setEdit: SetEdit }) {
   return (
     <section className="panel">
       <h2>Next steps</h2>
@@ -27,6 +30,16 @@ export function NextSteps({ packet }: { packet: Packet }) {
                 </>
               )}
             </p>
+            <div className="step-note">
+              <Editable
+                label="note on this step"
+                value={s.note ?? ""}
+                edited={!!s.note}
+                emptyLabel="+ Add a note"
+                onSave={(text) => setEdit(EDIT_KEYS.stepNote(s.id), text || null)}
+                onReset={() => setEdit(EDIT_KEYS.stepNote(s.id), null)}
+              />
+            </div>
           </li>
         ))}
       </ol>

@@ -6,7 +6,11 @@ import { createAnthropicClient } from "../../server/ai/client.ts";
 import { extractFacts } from "../../server/ai/extractFacts.ts";
 import { emptyCase } from "../../shared/schemas.ts";
 
-process.loadEnvFile?.(new URL("../../.env", import.meta.url));
+try {
+  process.loadEnvFile(new URL("../../.env", import.meta.url));
+} catch {
+  // No .env: the test skips below.
+}
 const text = readFileSync(new URL("../fixtures/injection.txt", import.meta.url), "utf8");
 const ai = createAnthropicClient();
 

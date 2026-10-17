@@ -1,8 +1,13 @@
+import { EDIT_KEYS } from "../../shared/edits.ts";
 import type { CaseState, Fact, Packet } from "../../shared/schemas.ts";
 import { SourceExcerpt } from "../components/SourceExcerpt.tsx";
 import { StatusTag } from "../components/StatusTag.tsx";
+import type { SetEdit } from "../steps/ReviewStep.tsx";
+import { Editable } from "./Editable.tsx";
 
-export function Statements({ packet, factsById, state }: { packet: Packet; factsById: Map<string, Fact>; state: CaseState }) {
+type Props = { packet: Packet; factsById: Map<string, Fact>; state: CaseState; setEdit: SetEdit };
+
+export function Statements({ packet, factsById, state, setEdit }: Props) {
   const filename = (fact: Fact) => state.documents.find((d) => d.id === fact.documentId)?.filename ?? "removed document";
   const backed = packet.statements.filter((s) => s.status === "backed").length;
 
@@ -15,11 +20,17 @@ export function Statements({ packet, factsById, state }: { packet: Packet; facts
       </p>
       {packet.statements.length === 0 && <p className="muted">No statements yet. Add a description or answers in Describe.</p>}
       <div className="stack">
-        {packet.statements.map(({ statement, status, factIds, contradictingFactIds }) => (
+        {packet.statements.map(({ statement, status, factIds, contradictingFactIds, originalText }) => (
           <div key={statement.id} className="card">
             <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
               <div style={{ flex: 1, minWidth: 240 }}>
-                <div>{statement.text}</div>
+                <Editable
+                  label="statement"
+                  value={statement.text}
+                  edited={originalText !== undefined}
+                  onSave={(text) => setEdit(EDIT_KEYS.statement(statement.id), text)}
+                  onReset={() => setEdit(EDIT_KEYS.statement(statement.id), null)}
+                />
                 <div className="small muted">{statement.origin === "answer" ? "Your answer" : "From your description"}</div>
               </div>
               <StatusTag status={status} />
