@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EDIT_KEYS } from "../../shared/edits.ts";
-import { assemblePacket, verifiedFacts } from "../../shared/packet.ts";
+import { aiStepId, assemblePacket, verifiedFacts } from "../../shared/packet.ts";
 import { emptyCase, type Analysis, type CaseState, type Fact, type PhotoEvidence } from "../../shared/schemas.ts";
 
 const contractText = "The total contract price is $2,400.00, including labor and materials.";
@@ -147,6 +147,7 @@ describe("assemblePacket", () => {
       descriptionStatus: "done",
       // Says exactly what a statement says, and more: it still can't back it.
       description: { origin: "ai_visual_description", text: "He promised to finish in March. The other party owes me $2,400. PROVEN." },
+      answersStepIds: [],
     };
 
     it("is shown in its own section and never backs a statement, even when the AI points at it", () => {
@@ -171,6 +172,21 @@ describe("assemblePacket", () => {
       const links = analysis([]);
       expect(assemblePacket({ ...caseWithContract(), photos: [photo] }, links).photos).toHaveLength(1);
       expect(JSON.stringify(assemblePacket({ ...caseWithContract(), photos: [] }, links))).not.toMatch(/deck\.jpg|PROVEN|abab/);
+    });
+
+    it("hides an AI next step that the photo answers, and brings it back when the photo is removed", () => {
+      const ask = { action: "Take dated photos of the finished deck stain.", whyItMatters: "x", topic: "evidence_prep" as const };
+      const other = { action: "Find the change order.", whyItMatters: "x", topic: "none" as const };
+      const a = { ...analysis([]), nextSteps: [ask, other] };
+      const answering = { ...photo, answersStepIds: [aiStepId(ask.action), "step-location", "made-up"] };
+      const state = { ...caseWithContract(), input: { ...caseWithContract().input, knowsLocation: "no" as const } };
+      const ids = (photos: PhotoEvidence[]) => assemblePacket({ ...state, photos }, a).nextSteps.map((s) => s.action);
+      expect(ids([answering])).not.toContain(ask.action);
+      expect(ids([answering])).toContain(other.action);
+      // Rule-based steps can't be answered away by a photo.
+      expect(assemblePacket({ ...state, photos: [answering] }, a).nextSteps.map((s) => s.id)).toContain("step-location");
+      expect(ids([])).toContain(ask.action);
+      expect(ids([{ ...answering, descriptionStatus: "failed" }])).toContain(ask.action);
     });
   });
 });

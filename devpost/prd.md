@@ -73,10 +73,12 @@ Source: `scope.md > The POC Boundary` (added after the final review).
 - `.jpg`/`.png` photos can be added alongside documents (same 10-file / 2 MB limits). Each photo card shows a preview, **technical metadata read from the file** (type, pixel size, file size, SHA-256, and the camera's capture time if the file has one, labeled as possibly missing or changed), and an **AI visual description — review before using**.
 - Location (GPS) data is never read, shown, or sent; embedded metadata is removed from the copy sent to the AI.
 - The description is generated when the photo is added. If it fails, the photo and its metadata stay, with Retry. In the Demo case, the demo photo's description is a saved recording (no API call).
+- A next step asking for a photo the user has already added is hidden while that photo is in the case (the AI matches the photo to the request; rule-based steps are never hidden). When photos are added before generating, the analysis is told which photos exist so it doesn't ask for them.
 - Photos never become facts and never make a statement ✓ backed. In the packet they have their own **Photo evidence** section in Packet details, and print keeps the labels, filename, and hash with a small thumbnail.
 - [ ] Adding `demo-files/deck-photo.jpg` shows its metadata and a labeled AI visual description; the number of ✓ backed statements doesn't change.
 - [ ] A renamed non-image (e.g. text named `.png`) is rejected with a clear message.
 - [ ] Removing the photo removes its metadata and description from the packet.
+- [ ] On the demo, adding the deck photo hides "Take or gather dated photos of the finished deck stain"; removing it brings the step back.
 
 ### Generate packet
 Source: `scope.md > The Unique Kernel`.

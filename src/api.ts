@@ -16,8 +16,8 @@ export function extractFacts(document: Pick<SourceDocument, "id" | "filename" | 
   return post<{ facts: Fact[]; droppedCount: number }>("/api/extract", { document });
 }
 
-export function analyzeCase(input: CaseInput, facts: Fact[]) {
-  return post<Analysis>("/api/analyze", { input, facts });
+export function analyzeCase(input: CaseInput, facts: Fact[], photos: { filename: string; description: string }[] = []) {
+  return post<Analysis>("/api/analyze", { input, facts, ...(photos.length ? { photos } : {}) });
 }
 
 export type Uploaded =
@@ -28,12 +28,16 @@ export function uploadDocument(file: File) {
   return postFile<Uploaded>("/api/documents", file);
 }
 
-export function describePhoto(file: File) {
-  return postFile<{ description: string; sha256: string }>("/api/photos/describe", file);
+/** steps: the AI's current next steps, so the reply can say which photo requests this photo answers. */
+export function describePhoto(file: File, steps: { id: string; action: string }[]) {
+  return postFile<{ description: string; sha256: string; answersStepIds: string[] }>("/api/photos/describe", file, {
+    steps: JSON.stringify(steps),
+  });
 }
 
-async function postFile<T>(url: string, file: File): Promise<T> {
+async function postFile<T>(url: string, file: File, fields: Record<string, string> = {}): Promise<T> {
   const body = new FormData();
+  for (const [name, value] of Object.entries(fields)) body.append(name, value);
   body.append("file", file, file.name);
   let res: Response;
   try {

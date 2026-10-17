@@ -8,11 +8,7 @@ export function Differences({ packet, factsById, documents }: { packet: Packet; 
   return (
     <section className="panel">
       <h2>Differences between documents</h2>
-      <p className="lede">
-        {packet.documentDifferences.length === 0
-          ? "Your documents agree with each other."
-          : "Places where two of your documents say different things. Both sides are shown; this app never picks one."}
-      </p>
+      {packet.documentDifferences.length === 0 && <p className="lede">Your documents agree with each other.</p>}
       <div className="stack">
         {packet.documentDifferences.map((c) => (
           <div key={c.id} className="card">

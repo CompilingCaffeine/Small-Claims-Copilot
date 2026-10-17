@@ -1,6 +1,7 @@
 import { useRef, useState, type DragEvent } from "react";
 import { ACCEPTED_EXTENSIONS, MAX_DOCUMENTS, MAX_FILE_BYTES, MAX_PASTE_CHARS } from "../../shared/limits.ts";
 import { formatFactValue } from "../../shared/normalize.ts";
+import { aiStepRefs } from "../../shared/packet.ts";
 import type { CaseState, PhotoEvidence, SourceDocument } from "../../shared/schemas.ts";
 import { backingPrompts } from "../../shared/statements.ts";
 import { describePhoto, uploadDocument } from "../api.ts";
@@ -15,7 +16,7 @@ type Props = {
   generating: boolean;
   onGenerate: () => void;
   /** A recorded description for a known photo (the demo's), so describing it costs nothing. */
-  savedPhotoDescription?: (sha256: string) => string | null;
+  savedPhotoDescription?: (sha256: string) => { description: string; answersStepIds: string[] } | null;
 };
 
 /** A file on its way in, or one that was turned away. Not saved: it never became a document. */
@@ -56,6 +57,7 @@ export function EvidenceStep({ state, update, generating, onGenerate, savedPhoto
           metadata: { origin: "technical_metadata", ...uploaded.image },
           thumbnail: await makePreview(file),
           descriptionStatus: "pending",
+          answersStepIds: [],
         };
         keepOriginal(photo.id, file);
         update((s) => ({ ...s, photos: [...s.photos, photo] }));
@@ -78,13 +80,21 @@ export function EvidenceStep({ state, update, generating, onGenerate, savedPhoto
     setPhoto({ descriptionStatus: "pending", descriptionError: undefined });
     const saved = savedPhotoDescription?.(photo.metadata.sha256);
     if (saved) {
-      setPhoto({ descriptionStatus: "done", description: { origin: "ai_visual_description", text: saved } });
+      setPhoto({
+        descriptionStatus: "done",
+        description: { origin: "ai_visual_description", text: saved.description },
+        answersStepIds: saved.answersStepIds,
+      });
       return;
     }
     try {
-      const result = await describePhoto(file);
+      const result = await describePhoto(file, aiStepRefs(state.analysis));
       if (result.sha256 !== photo.metadata.sha256) throw new Error("The file changed after it was added. Remove it and add it again.");
-      setPhoto({ descriptionStatus: "done", description: { origin: "ai_visual_description", text: result.description } });
+      setPhoto({
+        descriptionStatus: "done",
+        description: { origin: "ai_visual_description", text: result.description },
+        answersStepIds: result.answersStepIds,
+      });
     } catch (err) {
       setPhoto({ descriptionStatus: "failed", descriptionError: err instanceof Error ? err.message : "The description failed." });
     }

@@ -48,7 +48,8 @@ export async function generatePacket(
   const facts = { ...state.facts, ...Object.fromEntries(toExtract.map((d, i) => [d.id, results[i]!])) };
 
   try {
-    const analysis = await analyzeCase(state.input, verifiedFacts({ documents: state.documents, facts }));
+    const photos = state.photos.flatMap((p) => (p.description ? [{ filename: p.filename, description: p.description.text }] : []));
+    const analysis = await analyzeCase(state.input, verifiedFacts({ documents: state.documents, facts }), photos);
     update((s) => ({ ...s, analysis, generatedAt: new Date().toISOString() }));
     return null;
   } catch (err) {

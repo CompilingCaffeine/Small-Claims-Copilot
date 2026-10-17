@@ -24,10 +24,20 @@ export function demoReplay(
   return { facts: structuredClone(parsed.data.facts), analysis: structuredClone(parsed.data.analysis) };
 }
 
-const DemoPhotoRecording = z.object({ filename: z.string(), sha256: z.string(), description: z.string(), recordedAt: z.string() });
+const DemoPhotoRecording = z.object({
+  filename: z.string(),
+  sha256: z.string(),
+  description: z.string(),
+  answersStepIds: z.array(z.string()), // recorded against the saved demo run's next steps
+  recordedAt: z.string(),
+});
 
 /** The recorded description of demo-files/deck-photo.jpg, matched by its exact bytes (SHA-256). */
-export function demoPhotoDescription(sha256: string, recording: unknown = savedPhoto): string | null {
+export function demoPhotoDescription(
+  sha256: string,
+  recording: unknown = savedPhoto,
+): { description: string; answersStepIds: string[] } | null {
   const parsed = DemoPhotoRecording.safeParse(recording);
-  return parsed.success && parsed.data.sha256 === sha256 ? parsed.data.description : null;
+  if (!parsed.success || parsed.data.sha256 !== sha256) return null;
+  return { description: parsed.data.description, answersStepIds: parsed.data.answersStepIds };
 }

@@ -78,6 +78,9 @@ export const PhotoEvidence = z.object({
   descriptionStatus: z.enum(["pending", "done", "failed"]),
   description: z.object({ origin: z.literal("ai_visual_description"), text: z.string() }).optional(),
   descriptionError: z.string().optional(),
+  // AI next steps (by ID) asking for a photo of what this photo shows. They're hidden
+  // while this photo is in the case.
+  answersStepIds: z.array(z.string()).default([]),
 });
 export type PhotoEvidence = z.infer<typeof PhotoEvidence>;
 

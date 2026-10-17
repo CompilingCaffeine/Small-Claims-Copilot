@@ -58,10 +58,6 @@ export function PhotoCard({ photo, onRetry, onRemove }: Props) {
           <div className="small">
             SHA-256: <span className="mono hash">{m.sha256}</span>
           </div>
-          <div className="small muted">
-            The hash identifies this exact file. It doesn't show who took the photo, when, or where. Location data is never
-            read.
-          </div>
         </div>
 
         <div className="photo-section">

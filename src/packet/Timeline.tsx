@@ -24,13 +24,11 @@ export function Timeline({ packet, factsById, documents }: { packet: Packet; fac
   return (
     <section className="panel">
       <h2>Timeline</h2>
-      <p className="lede">Only dates written in your documents. Nothing here is estimated.</p>
       {packet.timeline.length === 0 && <p className="muted">No dated events found in your documents.</p>}
       <ol className="events">{packet.timeline.map(row)}</ol>
       {packet.undated.length > 0 && (
         <>
-          <h3>Date unknown</h3>
-          <p className="small muted">Events and payments your documents mention without a date.</p>
+          <h3>Event: Date Unknown</h3>
           <ol className="events">{packet.undated.map(row)}</ol>
         </>
       )}

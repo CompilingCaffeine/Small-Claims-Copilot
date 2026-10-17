@@ -22,12 +22,14 @@ export type AnalyzeOutput = z.infer<typeof AnalyzeOutput>;
 export const AnalyzeRequest = z.object({
   input: CaseInput,
   facts: z.array(Fact).max(1000),
+  // AI descriptions of the case's photos: only so next steps don't ask for photos already added.
+  photos: z.array(z.object({ filename: z.string().max(300), description: z.string().max(500) })).max(10).optional(),
 });
 export type AnalyzeRequest = z.infer<typeof AnalyzeRequest>;
 
 export type AnalyzeResult = { ok: true; analysis: Analysis } | { ok: false; error: string };
 
-export async function analyzeCase(ai: AiClient, { input, facts }: AnalyzeRequest): Promise<AnalyzeResult> {
+export async function analyzeCase(ai: AiClient, { input, facts, photos }: AnalyzeRequest): Promise<AnalyzeResult> {
   const answers = answerStatements(input);
   const result = await ai.parse({
     system: ANALYZE_SYSTEM,
@@ -41,6 +43,7 @@ export async function analyzeCase(ai: AiClient, { input, facts }: AnalyzeRequest
         value: formatFactValue(f.value),
         excerpt: f.excerpt,
       })),
+      photos,
     }),
     schema: AnalyzeOutput,
   });

@@ -48,13 +48,16 @@ export function assemblePacket(
   const notes = new Map(analysis.links.filter((l) => l.note.trim()).map((l) => [l.statementId, l.note.trim()]));
   const flags = detectFlags(statements, factsById, notes);
   const context = { input: state.input, documents: state.documents, facts: state.facts, statements, flags, factsById };
+  // A photo already in the case answers the AI's request for that photo.
+  const answered = new Set((state.photos ?? []).flatMap((p) => (p.descriptionStatus === "done" ? p.answersStepIds : [])));
   const aiSteps: NextStep[] = analysis.nextSteps.map((s) => ({
-    id: contentId("step", s.action),
+    id: aiStepId(s.action),
     action: s.action,
     whyItMatters: s.whyItMatters,
     origin: "ai",
     ...(linkFor(s.topic) ? { link: linkFor(s.topic) } : {}),
   }));
+  const openAiSteps = aiSteps.filter((s) => !answered.has(s.id));
 
   const evidence: EvidenceRow[] = state.documents
     .filter((d) => d.status === "ready")
@@ -68,7 +71,7 @@ export function assemblePacket(
 
   const packet: Packet = {
     flags,
-    nextSteps: linkOnce([...leadingSteps(context), ...aiSteps, ...trailingSteps(context)]),
+    nextSteps: linkOnce([...leadingSteps(context), ...openAiSteps, ...trailingSteps(context)]),
     documentDifferences: detectConflicts({ facts, documents: state.documents }, analysis.conflicts),
     statements,
     ...buildTimeline(facts),
@@ -80,6 +83,15 @@ export function assemblePacket(
     droppedFactCount: Object.values(state.facts).reduce((n, f) => n + f.droppedCount, 0),
   };
   return applyEdits(packet, state.edits ?? {});
+}
+
+export function aiStepId(action: string): string {
+  return contentId("step", action);
+}
+
+/** The AI's next steps as {id, action}, for asking whether a new photo answers any of them. */
+export function aiStepRefs(analysis: Analysis | null): { id: string; action: string }[] {
+  return (analysis?.nextSteps ?? []).map((s) => ({ id: aiStepId(s.action), action: s.action }));
 }
 
 /** Each official page is linked from the first step that needs it, not repeated on every step. */

@@ -2,7 +2,7 @@ import express, { type ErrorRequestHandler } from "express";
 import type { AiClient } from "./ai/client.ts";
 import { AnalyzeRequest, analyzeCase } from "./ai/analyze.ts";
 import { ExtractRequest, extractFacts } from "./ai/extractFacts.ts";
-import { describePhoto } from "./ai/describePhoto.ts";
+import { StepRefs, describePhoto } from "./ai/describePhoto.ts";
 import { receiveFile, uploadRouter } from "./upload.ts";
 
 export function createApp({ ai }: { ai: AiClient }) {
@@ -18,12 +18,19 @@ export function createApp({ ai }: { ai: AiClient }) {
   app.post("/api/photos/describe", async (req, res) => {
     const file = await receiveFile(req, res);
     if (!file) return;
-    const result = await describePhoto(ai, file.filename, file.data);
+    let steps: StepRefs = [];
+    try {
+      steps = StepRefs.parse(JSON.parse(String(req.body?.steps ?? "[]")));
+    } catch {
+      res.status(400).json({ error: "Invalid next steps." });
+      return;
+    }
+    const result = await describePhoto(ai, file.filename, file.data, steps);
     if (!result.ok) {
       res.status(result.status).json({ error: result.error });
       return;
     }
-    res.json({ description: result.description, sha256: result.sha256 });
+    res.json({ description: result.description, sha256: result.sha256, answersStepIds: result.answersStepIds });
   });
 
   app.post("/api/extract", async (req, res) => {
