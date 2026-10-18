@@ -75,3 +75,7 @@ Anyone can open the Demo case and read uploads; the routes that call the AI need
 - "Backed by" means a document says so, not that it's true.
 - AI-written next steps and the summary can be wrong. The summary is labeled *AI interpretation*, and you can edit its wording or add notes to steps.
 - Costs: a typical 4-document case costs roughly $0.60 in API usage per full generate (documents already read are reused).
+
+## License
+
+[MIT](LICENSE). The demo case and its documents are fictional.
