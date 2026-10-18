@@ -16,3 +16,12 @@ dist/
 
 # Vercel project link and build output
 .vercel/
+
+# Locally installed agent skill packs (not project code)
+/.agents/
+/.claude/
+/agent/
+/skills-lock.json
+
+# Private agent handoff notes
+/*_handoff.md
