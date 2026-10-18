@@ -1,0 +1,14 @@
+# Upload only what the hosted demo build needs. Never upload .env.
+/*
+!/src
+!/shared
+!/server
+!/tests
+!/scripts
+!/demo-files
+!/index.html
+!/package.json
+!/package-lock.json
+!/tsconfig.json
+!/vite.config.ts
+!/vercel.json

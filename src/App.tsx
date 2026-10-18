@@ -1,4 +1,7 @@
 import { useState } from "react";
+import deckPhotoUrl from "../demo-files/deck-photo.jpg";
+import { useAccessCodeRequired } from "./accessCode.ts";
+import { AccessCode } from "./components/AccessCode.tsx";
 import { ConfirmDialog } from "./components/ConfirmDialog.tsx";
 import { Notice } from "./components/Notice.tsx";
 import { demoPhotoDescription, demoReplay } from "./demo/demoReplay.ts";
@@ -20,6 +23,7 @@ export default function App() {
   const [generating, setGenerating] = useState<Tab | null>(null);
   const [errors, setErrors] = useState<Record<Tab, string | null>>({ my: null, demo: null });
   const [confirming, setConfirming] = useState(false);
+  const accessCodeRequired = useAccessCodeRequired();
 
   async function onGenerate() {
     const forTab = tab;
@@ -70,6 +74,7 @@ export default function App() {
           Couldn't save. Your case works until you close this tab.
         </div>
       )}
+      {accessCodeRequired && tab === "my" && <AccessCode />}
       {isFirstUse && (
         <div className="banner info no-print">
           New here? Open the <strong>Demo case</strong> tab to see a finished example with a fictional contractor dispute.
@@ -110,6 +115,7 @@ export default function App() {
           generating={generating === tab}
           onGenerate={onGenerate}
           savedPhotoDescription={tab === "demo" ? demoPhotoDescription : undefined}
+          demoPhotoUrl={tab === "demo" ? deckPhotoUrl : undefined}
         />
       )}
       {step === 2 && <ReviewStep state={state} update={update} />}

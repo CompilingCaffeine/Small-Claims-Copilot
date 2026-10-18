@@ -28,7 +28,7 @@ Open http://localhost:5173.
 
 Open the **Demo case** tab: a fictional homeowner disputing a $400 charge with a contractor. Go to **Add evidence** and click **Generate packet**. It's instant and free: the unedited demo replays one saved run of the AI (`src/demo/demoResults.json`), and code still re-checks every quote against the documents. Once you edit the demo, it calls the AI like your own case. **Reset demo** restores it.
 
-To try uploads, open **My case** and drop in the files from `demo-files/` (three `.txt` files and a `.pdf`). To try photo evidence, add `demo-files/deck-photo.jpg` (a synthetic drawing) to the Demo case: its description is a saved recording, so it's free there and calls the AI anywhere else.
+To try uploads, open **My case** and drop in the files from `demo-files/` (three `.txt` files and a `.pdf`). To try photo evidence, click **Try photo evidence: add the demo photo** in the Demo case (it adds `demo-files/deck-photo.jpg`, a synthetic drawing): its description is a saved recording, so it's free there and calls the AI anywhere else.
 
 ## Scripts
 
@@ -38,9 +38,19 @@ To try uploads, open **My case** and drop in the files from `demo-files/` (three
 | `npm test` | All tests, offline: the AI is faked, no key needed |
 | `npm run test:live` | A prompt-injection document against the real API (≈ $0.10) |
 | `npm run typecheck` / `npm run build` | Type-check / production build |
+| `npm run build:vercel` | Production build plus the API as a Vercel Function (`.vercel/output`) |
 | `npm run record-demo` | Re-records the demo's saved AI run (≈ $0.60). Run it after changing the demo text or the prompts; `npm test` fails until you do |
 | `npm run record-demo-photo` | Re-records the demo photo's description (≈ $0.02) |
 | `npm run demo-files` | Rewrites the demo documents in `demo-files/` from the Demo case text |
+
+## Hosted copy (Vercel)
+
+`vercel.json` builds the web app and the API (`server/vercel.ts`, the same Express app as `npm run dev`) into one deployment. Set two environment variables in the Vercel project:
+
+- `ANTHROPIC_API_KEY`: ideally a key in its own Anthropic workspace with a monthly spend limit.
+- `ACCESS_CODES`: comma-separated codes, at least 8 characters each. Give each person their own, so you can remove one without affecting the others.
+
+Anyone can open the Demo case and read uploads; the routes that call the AI need one of the codes, entered at the top of My case. With no codes set, those routes stay locked.
 
 ## How it works
 

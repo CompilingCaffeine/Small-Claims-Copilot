@@ -13,3 +13,6 @@ dist/
 
 # Demo-video recording helpers (local only)
 /recording/
+
+# Vercel project link and build output
+.vercel/

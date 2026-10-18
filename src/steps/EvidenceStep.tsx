@@ -17,17 +17,20 @@ type Props = {
   onGenerate: () => void;
   /** A recorded description for a known photo (the demo's), so describing it costs nothing. */
   savedPhotoDescription?: (sha256: string) => { description: string; answersStepIds: string[] } | null;
+  /** The demo's photo, so trying photo evidence doesn't need a file on hand. */
+  demoPhotoUrl?: string;
 };
 
 /** A file on its way in, or one that was turned away. Not saved: it never became a document. */
 type Upload = { key: string; file: File; status: "uploading" | "failed"; error?: string };
 
-export function EvidenceStep({ state, update, generating, onGenerate, savedPhotoDescription }: Props) {
+export function EvidenceStep({ state, update, generating, onGenerate, savedPhotoDescription, demoPhotoUrl }: Props) {
   const [pasteName, setPasteName] = useState("");
   const [pasteText, setPasteText] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [dragging, setDragging] = useState(false);
+  const [demoPhotoError, setDemoPhotoError] = useState(false);
   const picker = useRef<HTMLInputElement>(null);
 
   const setUpload = (key: string, change: Partial<Upload> | null) =>
@@ -103,6 +106,17 @@ export function EvidenceStep({ state, update, generating, onGenerate, savedPhoto
   function removePhoto(id: string) {
     forgetOriginal(id);
     update((s) => ({ ...s, photos: s.photos.filter((p) => p.id !== id) }));
+  }
+
+  async function addDemoPhoto(url: string) {
+    setDemoPhotoError(false);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      addFiles([new File([await res.blob()], "deck-photo.jpg", { type: "image/jpeg" })]);
+    } catch {
+      setDemoPhotoError(true);
+    }
   }
 
   function onDrop(e: DragEvent) {
@@ -191,6 +205,12 @@ export function EvidenceStep({ state, update, generating, onGenerate, savedPhoto
           }}
         />
         <div className="small muted">Scanned PDFs (pictures of pages) can't be read; paste their text instead.</div>
+        {demoPhotoUrl && state.photos.length === 0 && (
+          <button type="button" className="btn quiet" onClick={() => void addDemoPhoto(demoPhotoUrl)}>
+            Try photo evidence: add the demo photo
+          </button>
+        )}
+        {demoPhotoError && <div className="small" style={{ color: "var(--bad-ink)" }}>The demo photo couldn't be loaded.</div>}
       </div>
 
       <details className="paste">
