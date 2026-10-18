@@ -45,12 +45,7 @@ To try uploads, open **My case** and drop in the files from `demo-files/` (three
 
 ## Hosted copy (Vercel)
 
-`vercel.json` builds the web app and the API (`server/vercel.ts`, the same Express app as `npm run dev`) into one deployment. Set two environment variables in the Vercel project:
-
-- `ANTHROPIC_API_KEY`: ideally a key in its own Anthropic workspace with a monthly spend limit.
-- `ACCESS_CODES`: comma-separated codes, at least 8 characters each. Give each person their own, so you can remove one without affecting the others.
-
-Anyone can open the Demo case and read uploads; the routes that call the AI need one of the codes, entered at the top of My case. With no codes set, those routes stay locked.
+`vercel.json` builds the web app and the API (`server/vercel.ts`, the same Express app as `npm run dev`) into one deployment. Set `ANTHROPIC_API_KEY` in the Vercel project, ideally a key in its own Anthropic workspace with a monthly spend limit: live AI on the hosted copy is open to anyone, and each full generate costs roughly $0.60.
 
 ## How it works
 

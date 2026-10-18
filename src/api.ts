@@ -1,10 +1,9 @@
 import type { Analysis, CaseInput, Fact, PhotoEvidence, SourceDocument } from "../shared/schemas.ts";
-import { accessCode } from "./accessCode.ts";
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", ...codeHeader() }, body: JSON.stringify(body) });
+    res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   } catch {
     throw new Error("Couldn't reach the server. Is `npm run dev` running?");
   }
@@ -42,28 +41,11 @@ async function postFile<T>(url: string, file: File, fields: Record<string, strin
   body.append("file", file, file.name);
   let res: Response;
   try {
-    res = await fetch(url, { method: "POST", headers: codeHeader(), body });
+    res = await fetch(url, { method: "POST", body });
   } catch {
     throw new Error("Couldn't reach the server. Is `npm run dev` running?");
   }
   const data = await res.json().catch(() => null);
   if (!res.ok) throw new Error(data?.error ?? `Request failed (${res.status}).`);
   return data as T;
-}
-
-function codeHeader(code = accessCode()): Record<string, string> {
-  return code ? { "X-Access-Code": code } : {};
-}
-
-/** True if the server accepts this access code. */
-export async function checkAccessCode(code: string): Promise<boolean> {
-  let res: Response;
-  try {
-    res = await fetch("/api/access", { method: "POST", headers: codeHeader(code) });
-  } catch {
-    throw new Error("Couldn't reach the server.");
-  }
-  if (res.status === 401) return false;
-  if (!res.ok) throw new Error(`The check failed (${res.status}).`);
-  return true;
 }
